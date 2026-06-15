@@ -9,7 +9,7 @@
 
     <h1>Dashboard</h1>
     
-    <p>You have successfully logged into the system portal framework.</p>
+    <p>You have successfully logged as CWD.</p>
 
     <!-- Logout form must use POST to match your web.php route -->
     <form action="{{ route('logout') }}" method="POST">

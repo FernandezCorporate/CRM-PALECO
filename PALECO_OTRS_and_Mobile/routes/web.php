@@ -1,16 +1,39 @@
 <?php
+
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use App\Enums\UserRole;
 
-// 1. The Public Views
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest'); // Login page access route
-Route::post('/login', [AuthController::class, 'authenticate'])->middleware('guest'); // Submit Login credentials route
+Route::get('/login', [AuthController::class, 'showLogin'])
+    ->name('login')
+    ->middleware('guest');
 
-// 2. The Protected App Environment
+Route::post('/login', [AuthController::class, 'authenticate'])
+    ->middleware('guest');
+
 Route::middleware(['auth'])->group(function () {
+
     Route::get('/', function () {
-        return view('welcome'); // Authorized admin dashboard access route
+        return match (Auth::user()->role) {
+            UserRole::ADMIN => redirect()->route('admin.dashboard'),
+            UserRole::CWD => redirect()->route('cwd.dashboard'),
+            default => abort(403),
+        };
     })->name('dashboard');
-    
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout'); // Logout route
+
+    Route::prefix('admin')->group(function () {
+        Route::get('/dashboard', function () {
+            return view('admin.dashboard');
+        })->name('admin.dashboard');
+    });
+
+    Route::prefix('cwd')->group(function () {
+        Route::get('/dashboard', function () {
+            return view('cwd.dashboard');
+        })->name('cwd.dashboard');
+    });
+
+    Route::post('/logout', [AuthController::class, 'logout'])
+        ->name('logout');
 });

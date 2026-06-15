@@ -9,45 +9,50 @@ use Illuminate\Validation\Rules\Enum;
 
 class AuthController extends Controller
 {
-    /**
-     * Display the login page.
-     */
     public function showLogin()
     {
         return view('auth.login');
     }
 
-    /**
-     * Handle login.
-     */
     public function authenticate(Request $request)
     {
         $credentials = $request->validate([
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
-            'role'     => ['required', new Enum(UserRole::class)],
+            'role' => ['required', new Enum(UserRole::class)],
         ]);
+
+        if (in_array($credentials['role'], [
+            UserRole::FOREMAN->value,
+            UserRole::FIELD_PERSONNEL->value,
+        ])) {
+            return back()->withErrors([
+                'role' => 'This role is not allowed.'
+            ])->onlyInput('username');
+        }
 
         if (Auth::attempt([
             'username' => $credentials['username'],
             'password' => $credentials['password'],
-            'role'     => $credentials['role'],
         ])) {
+            if (Auth::user()->role->value !== $credentials['role']) {
+                Auth::logout();
+
+                return back()->withErrors([
+                    'role' => 'Role mismatch.'
+                ])->onlyInput('username');
+            }
+
             $request->session()->regenerate();
 
             return redirect()->intended('/');
         }
 
-        return back()
-            ->withErrors([
-                'username' => 'The provided credentials do not match our system records.',
-            ])
-            ->onlyInput('username');
+        return back()->withErrors([
+            'username' => 'Invalid credentials.',
+        ])->onlyInput('username');
     }
 
-    /**
-     * Logout user.
-     */
     public function logout(Request $request)
     {
         Auth::logout();

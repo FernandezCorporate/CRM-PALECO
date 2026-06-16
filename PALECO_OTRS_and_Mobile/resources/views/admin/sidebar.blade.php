@@ -15,6 +15,10 @@
                 <ul style="list-style: none; padding: 0;">
                     <li style="margin-bottom: 10px;"><a href="{{ route('dashboard') }}">Dashboard</a></li>
                 </ul>
+
+                <ul style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 10px;"><a href="{{ route('admin.userManagement') }}">User Management</a></li>
+                </ul>
             </nav>
         </div>
 

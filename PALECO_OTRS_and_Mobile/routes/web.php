@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\UserRole;
@@ -22,13 +23,15 @@ Route::middleware(['auth'])->group(function () {
         };
     })->name('dashboard');
 
-    Route::prefix('admin')->group(function () {
+    Route::prefix('admin')->middleware(['auth', 'can:access-admin'])->group(function () {
         Route::get('/dashboard', function () {
             return view('admin.dashboard');
         })->name('admin.dashboard');
+
+        Route::get('/users', [AdminController::class, 'userManagement'])->name('admin.userManagement');
     });
 
-    Route::prefix('cwd')->group(function () {
+    Route::prefix('cwd')->middleware(['auth', 'can:access-cwd'])->group(function () {
         Route::get('/dashboard', function () {
             return view('cwd.dashboard');
         })->name('cwd.dashboard');

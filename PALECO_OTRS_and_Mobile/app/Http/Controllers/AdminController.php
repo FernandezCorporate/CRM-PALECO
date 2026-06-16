@@ -27,7 +27,7 @@ class AdminController extends Controller
             return $query->where('role', $request->role);
         });
 
-        // Filter by Search input (Updated to search new legal name fields too)
+        // Filter by Search input
         $usersQuery->when($request->filled('search'), function ($query) use ($request) {
             $search = $request->search;
             return $query->where(function ($subQuery) use ($search) {
@@ -38,22 +38,16 @@ class AdminController extends Controller
             });
         });
 
-        // Fetch filtered results
-        $users = $usersQuery->latest()->get();
+        // 💡 CHANGE: Fetch results with pagination (4 per page)
+        $users = $usersQuery->latest()->paginate(4)->withQueryString();
 
-        $users->transform(function ($user) {
+        // 3. Process each user inside the paginated list collection
+        $users->getCollection()->transform(function ($user) {
             $user->legal_full_name = collect([
-                // Str::title() transforms "allen glenn" into "Allen Glenn"
-                $user->first_name ? Str::title($user->first_name) : null,
-                
-                // Converts middle name to a clean single capital letter initial (e.g., "F.")
-                $user->middle_name ? Str::upper(substr($user->middle_name, 0, 1)) . '.' : null,
-                
-                // Transforms last name words accurately
-                $user->last_name ? Str::title($user->last_name) : null,
-                
-                // Ensures extensions stay capitalized (e.g., "JR.")
-                $user->name_ext ? Str::upper($user->name_ext) : null,
+                $user->first_name ? \Illuminate\Support\Str::title($user->first_name) : null,
+                $user->middle_name ? \Illuminate\Support\Str::upper(substr($user->middle_name, 0, 1)) . '.' : null,
+                $user->last_name ? \Illuminate\Support\Str::title($user->last_name) : null,
+                $user->name_ext ? \Illuminate\Support\Str::upper($user->name_ext) : null,
             ])->filter()->implode(' ');
 
             return $user;
@@ -62,4 +56,5 @@ class AdminController extends Controller
         // 4. Return view with both table items and total counts
         return view('admin.userManagement', compact('users', 'counts'));
     }
+
 }

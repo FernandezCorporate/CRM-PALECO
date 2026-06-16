@@ -175,5 +175,33 @@
         </table>
     </div>
 
+    <!-- CUSTOM BULLETPROOF PAGINATION NAVIGATION -->
+    <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 12px 20px; border: 1px solid #ddd; border-radius: 6px; font-family: sans-serif;">
+        
+        <!-- Total Counts Status Text -->
+        <div style="color: #555; font-size: 14px;">
+            Showing <strong>{{ $users->firstItem() ?? 0 }}</strong> to <strong>{{ $users->lastItem() ?? 0 }}</strong> of <strong>{{ $users->total() }}</strong> users
+        </div>
+
+        <!-- Custom Action Buttons Layout -->
+        <div style="display: flex; gap: 8px;">
+            <!-- Previous Button Link -->
+            @if ($users->onFirstPage())
+                <span style="color: #aaa; background: #f5f5f5; border: 1px solid #ddd; padding: 6px 14px; border-radius: 4px; font-size: 13px; cursor: not-allowed;">« Previous</span>
+            @else
+                <a href="{{ $users->previousPageUrl() }}" style="color: #333; background: #fff; border: 1px solid #ccc; text-decoration: none; padding: 6px 14px; border-radius: 4px; font-size: 13px; font-weight: 500;">« Previous</a>
+            @endif
+
+            <!-- Next Button Link -->
+            @if ($users->hasMorePages())
+                <a href="{{ $users->nextPageUrl() }}" style="color: #333; background: #fff; border: 1px solid #ccc; text-decoration: none; padding: 6px 14px; border-radius: 4px; font-size: 13px; font-weight: 500;">Next »</a>
+            @else
+                <span style="color: #aaa; background: #f5f5f5; border: 1px solid #ddd; padding: 6px 14px; border-radius: 4px; font-size: 13px; cursor: not-allowed;">Next »</span>
+            @endif
+        </div>
+
+    </div>
+
 </div>
 @endsection
+

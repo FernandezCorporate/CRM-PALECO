@@ -104,7 +104,17 @@
                                     {{ strtoupper(substr($user->username, 0, 2)) }}
                                 </div>
                                 <div>
-                                    <div style="font-weight: bold; color: #111;">{{ $user->username }}</div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <!-- Safe, Emphasized Username -->
+                                        <strong style="color: #111;">{{ $user->username }}</strong>
+                                        
+                                        <!-- Render styling on the frontend layout side safely -->
+                                        @if($user->legal_full_name)
+                                            <span style="color: #666; font-size: 13px; font-weight: normal;">
+                                                — {{ $user->legal_full_name }}
+                                            </span>
+                                        @endif
+                                    </div>
                                     <div style="font-size: 12px; color: #666;">📧 {{ $user->email }}</div>
                                 </div>
                             </div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Enums\UserRole;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -26,21 +27,39 @@ class AdminController extends Controller
             return $query->where('role', $request->role);
         });
 
-        // Filter by Search input (Search by name, username, or email)
+        // Filter by Search input (Updated to search new legal name fields too)
         $usersQuery->when($request->filled('search'), function ($query) use ($request) {
             $search = $request->search;
             return $query->where(function ($subQuery) use ($search) {
                 $subQuery->where('username', 'like', "%{$search}%")
                          ->orWhere('email', 'like', "%{$search}%")
-                         // If you have a separate name field or combination:
-                         ->orWhere('username', 'like', "%{$search}%"); 
+                         ->orWhere('first_name', 'like', "%{$search}%")
+                         ->orWhere('last_name', 'like', "%{$search}%");
             });
         });
 
-        // Fetch filtered results (you can also change ->get() to ->paginate(10))
+        // Fetch filtered results
         $users = $usersQuery->latest()->get();
 
-        // 3. Return view with both table items and total counts
+        $users->transform(function ($user) {
+            $user->legal_full_name = collect([
+                // Str::title() transforms "allen glenn" into "Allen Glenn"
+                $user->first_name ? Str::title($user->first_name) : null,
+                
+                // Converts middle name to a clean single capital letter initial (e.g., "F.")
+                $user->middle_name ? Str::upper(substr($user->middle_name, 0, 1)) . '.' : null,
+                
+                // Transforms last name words accurately
+                $user->last_name ? Str::title($user->last_name) : null,
+                
+                // Ensures extensions stay capitalized (e.g., "JR.")
+                $user->name_ext ? Str::upper($user->name_ext) : null,
+            ])->filter()->implode(' ');
+
+            return $user;
+        });
+
+        // 4. Return view with both table items and total counts
         return view('admin.userManagement', compact('users', 'counts'));
     }
 }

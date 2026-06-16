@@ -35,6 +35,16 @@ class AuthController extends Controller
             'username' => $credentials['username'],
             'password' => $credentials['password'],
         ])) {
+            // 1. Check if the user account is deactivated
+            if (!Auth::user()->is_active) {
+                Auth::logout();
+
+                return back()->withErrors([
+                    'username' => 'Your account has been deactivated. Please contact an administrator.'
+                ])->onlyInput('username');
+            }
+
+            // 2. Check for role mismatch (Your existing code)
             if (Auth::user()->role->value !== $credentials['role']) {
                 Auth::logout();
 
@@ -52,6 +62,7 @@ class AuthController extends Controller
             'username' => 'Invalid credentials.',
         ])->onlyInput('username');
     }
+
 
     public function logout(Request $request)
     {

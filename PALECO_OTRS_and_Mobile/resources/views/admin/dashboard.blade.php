@@ -1,21 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome - PALECO CRM-CWD</title>
-</head>
-<body>
+@extends('admin.sidebar')
 
-    <h1>Dashboard</h1>
-    
-    <p>You have successfully logged as admin.</p>
+@section('title', 'Admin Dashboard - PALECO CRM-CWD')
 
-    <!-- Logout form must use POST to match your web.php route -->
-    <form action="{{ route('logout') }}" method="POST">
-        @csrf
-        <button type="submit">Log out</button>
-    </form>
-
-</body>
-</html>
+@section('content')
+    <h1>User Management</h1>
+    <p>Create, update, and deactivate accounts across all roles (Admin, CWD, Foreman, Field Personnel).</p>
+@endsection

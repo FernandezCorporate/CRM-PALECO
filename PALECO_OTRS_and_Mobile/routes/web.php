@@ -29,6 +29,7 @@ Route::middleware(['auth'])->group(function () {
         })->name('admin.dashboard');
 
         Route::get('/users', [AdminController::class, 'userManagement'])->name('admin.userManagement');
+        Route::post('/users', [AdminController::class, 'storeUser'])->name('admin.addUser');
     });
 
     Route::prefix('cwd')->middleware(['auth', 'can:access-cwd'])->group(function () {

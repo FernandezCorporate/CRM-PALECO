@@ -3,6 +3,19 @@
 @section('title', 'Admin Dashboard - PALECO CRM-CWD')
 
 @section('content')
+<!-- TEMPORARY DIAGNOSTIC BLOCK — REMOVE ONCE RESOLVED -->
+@if ($errors->any())
+    <div style="background-color: #fef2f2; border: 1px solid #fca5a5; padding: 16px; border-radius: 8px; margin-bottom: 20px; font-family: sans-serif;">
+        <h4 style="margin: 0 0 8px 0; color: #991b1b; font-size: 14px; font-weight: bold;">⚠️ Account Creation Failed:</h4>
+        <ul style="margin: 0; padding-left: 20px; color: #b91c1c; font-size: 13px;">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+
 <div style="font-family: sans-serif; padding: 20px; color: #333;">
 
     <!-- HEADER SECTION -->
@@ -12,7 +25,7 @@
             <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">Create, update, and deactivate accounts across all roles (Admin, CWD, Foreman, Field Personnel)</p>
         </div>
         <div>
-            <button type="button" style="background-color: #00a86b; color: white; border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+            <button type="button" onclick="toggleUserModal(true)" style="background-color: #00a86b; color: white; border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer;">
                 + New User
             </button>
         </div>
@@ -203,5 +216,221 @@
     </div>
 
 </div>
+
+<!-- CREATE USER POP-UP MODAL BACKDROP CONTROLLER -->
+<div id="create-user-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity duration-200 font-sans">
+    
+    <!-- Modal Foreground Card Box Container -->
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-xl mx-4 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+        
+        <!-- Modal Heading Top Header Navigation Pane -->
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
+            <h3 class="text-base font-bold text-slate-800">Create New User (* means required)</h3>
+            <button type="button" onclick="toggleUserModal(false)" class="text-slate-400 hover:text-slate-600 font-medium text-2xl transition-colors leading-none">&times;</button>
+        </div>
+
+        <!-- Form Submission Shell Wrap -->
+        <form action="{{ route('admin.addUser') }}" method="POST" class="flex flex-col flex-1 overflow-y-auto m-0">
+            @csrf
+            
+            <!-- Modal Internal Core Form Entry Content Body -->
+            <div class="p-6 space-y-4 flex-1">
+                
+                <!-- ROW 1: SPLIT 4-COLUMN LEGAL NAME LAYOUT GRID -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Full Name</label>
+                    <div class="grid grid-cols-12 gap-2">
+                        <div class="col-span-4">
+                            <input type="text" name="first_name" required placeholder="First Name *" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 box-border text-slate-800 placeholder-slate-400">
+                        </div>
+                        <div class="col-span-3">
+                            <input type="text" name="middle_name" placeholder="Middle Name" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 box-border text-slate-800 placeholder-slate-400">
+                        </div>
+                        <div class="col-span-3">
+                            <input type="text" name="last_name" required placeholder="Last Name *" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 box-border text-slate-800 placeholder-slate-400">
+                        </div>
+                        <div class="col-span-2">
+                            <input type="text" name="name_ext" placeholder="Ext (Jr.)" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 box-border text-slate-800 placeholder-slate-400">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROW 2: ACCOUNT ID CREDENTIALS GRID -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Username *</label>
+                        <input type="text" name="username" required placeholder="Enter login username" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 box-border text-slate-800 placeholder-slate-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Email Address *</label>
+                        <input type="email" name="email" required placeholder="name@company.com" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 box-border text-slate-800 placeholder-slate-400">
+                    </div>
+                </div>
+
+                <!-- ROW 3: SECURE ACCESSIBILITY PASSWORDS GRID WITH VISIBILITY TOGGLES -->
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Password Field -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Password *</label>
+                        <div class="relative w-full">
+                            <input type="password" id="password-field" name="password" required placeholder="••••••••" minlength="8" class="w-full pl-3 pr-10 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 box-border text-slate-800 placeholder-slate-400">
+                            <button type="button" onclick="togglePasswordVisibility('password-field', 'password-toggle-btn')" id="password-toggle-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-none border-none text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer p-1 uppercase tracking-wider select-none leading-none">Show</button>
+                        </div>
+                    </div>
+                    <!-- Confirm Password Field -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Confirm Password *</label>
+                        <div class="relative w-full">
+                            <input type="password" id="password-confirm-field" name="password_confirmation" required placeholder="••••••••" minlength="8" class="w-full pl-3 pr-10 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 box-border text-slate-800 placeholder-slate-400">
+                            <button type="button" onclick="togglePasswordVisibility('password-confirm-field', 'password-confirm-toggle-btn')" id="password-confirm-toggle-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-none border-none text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer p-1 uppercase tracking-wider select-none leading-none">Show</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROW 4: ROLE SELECTION CARDS GRID (4 SELECTIONS) -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Role Assignment *</label>
+                    
+                    <!-- Hidden parameter input proxy tracking state -->
+                    <input type="hidden" name="role" id="role-input" value="field_personnel">
+
+                    <div class="grid grid-cols-2 gap-3">
+                        
+                        <!-- 1. Admin Card -->
+                        <div id="card-admin" onclick="selectRole('admin')" class="role-card p-3 border-2 rounded-xl cursor-pointer transition-all duration-200 flex flex-col justify-between h-20 border-slate-200 bg-white group box-border">
+                            <div id="icon-admin" class="text-slate-400 group-hover:text-slate-600 transition-colors">
+                                <svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800 m-0">Admin</p>
+                                <p class="text-[10px] text-slate-400 font-light mt-0.5 mb-0">IT Division — full system control</p>
+                            </div>
+                        </div>
+
+                        <!-- 2. CWD Officer Card -->
+                        <div id="card-cwd" onclick="selectRole('cwd')" class="role-card p-3 border-2 rounded-xl cursor-pointer transition-all duration-200 flex flex-col justify-between h-20 border-slate-200 bg-white group box-border">
+                            <div id="icon-cwd" class="text-slate-400 group-hover:text-slate-600 transition-colors">
+                                <svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800 m-0">CWD Officer</p>
+                                <p class="text-[10px] text-slate-400 font-light mt-0.5 mb-0">Web ticket intake & monitoring</p>
+                            </div>
+                        </div>
+
+                        <!-- 3. Foreman Card -->
+                        <div id="card-foreman" onclick="selectRole('foreman')" class="role-card p-3 border-2 rounded-xl cursor-pointer transition-all duration-200 flex flex-col justify-between h-20 border-slate-200 bg-white group box-border">
+                            <div id="icon-foreman" class="text-slate-400 group-hover:text-slate-600 transition-colors text-sm leading-none">👷</div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800 m-0">Foreman</p>
+                                <p class="text-[10px] text-slate-400 font-light mt-0.5 mb-0">In-team dispatch & ticket closure</p>
+                            </div>
+                        </div>
+
+                        <!-- 4. Field Personnel Card -->
+                        <div id="card-field_personnel" onclick="selectRole('field_personnel')" class="role-card p-3 border-2 rounded-xl cursor-pointer transition-all duration-200 flex flex-col justify-between h-20 border-slate-200 bg-white group box-border">
+                            <div id="icon-field_personnel" class="text-slate-400 group-hover:text-slate-600 transition-colors text-sm leading-none">🔧</div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800 m-0">Field Personnel</p>
+                                <p class="text-[10px] text-slate-400 font-light mt-0.5 mb-0">Mobile crew — on-ground response</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- MODAL ACTION FOOTER BUTTON UTILITIES -->
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 sticky bottom-0 z-10">
+                <button type="button" onclick="toggleUserModal(false)" class="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 shadow-sm transition-colors cursor-pointer">
+                    Create User
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<!-- MODAL STATE JAVASCRIPT CONTROLLER -->
+<script>
+function toggleUserModal(show) {
+    const modal = document.getElementById('create-user-modal');
+    if (show) {
+        modal.classList.remove('hidden');
+    } else {
+        modal.classList.add('hidden');
+    }
+}
+
+function selectRole(role) {
+    document.getElementById('role-input').value = role;
+
+    // Reset layout cards back to default unselected classes
+    document.querySelectorAll('.role-card').forEach(card => {
+        card.classList.remove('border-emerald-600', 'ring-2', 'ring-emerald-100', 'bg-emerald-50/10');
+        card.classList.add('border-slate-200', 'bg-white');
+    });
+
+    // Reset default icon styling accent colors
+    ['admin', 'cwd', 'foreman', 'field_personnel'].forEach(roleKey => {
+        const iconNode = document.getElementById(`icon-${roleKey}`);
+        if(iconNode && !iconNode.innerHTML.includes('<svg')) {
+            // Skips raw emojis to keep text alignment native
+            return;
+        }
+        if(iconNode) {
+            iconNode.classList.add('text-slate-400');
+            iconNode.classList.remove('text-emerald-600');
+        }
+    });
+
+    // Apply active design styles onto selected card wrapper target
+    const activeCard = document.getElementById(`card-${role}`);
+    if (activeCard) {
+        activeCard.classList.remove('border-slate-200', 'bg-white');
+        activeCard.classList.add('border-emerald-600', 'ring-2', 'ring-emerald-100', 'bg-emerald-50/10');
+    }
+
+    // Convert icon state colors inside active card items
+    const activeIcon = document.getElementById(`icon-${role}`);
+    if (activeIcon && activeIcon.classList.contains('text-slate-400')) {
+        activeIcon.classList.remove('text-slate-400');
+        activeIcon.classList.add('text-emerald-600');
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const defaultRole = document.getElementById('role-input').value;
+    selectRole(defaultRole);
+});
+
+function togglePasswordVisibility(fieldId, buttonId) {
+    const passwordInput = document.getElementById(fieldId);
+    const toggleButton = document.getElementById(buttonId);
+    
+    if (passwordInput && toggleButton) {
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            toggleButton.textContent = "Hide";
+            toggleButton.classList.remove('text-slate-400');
+            toggleButton.classList.add('text-emerald-600');
+        } else {
+            passwordInput.type = "password";
+            toggleButton.textContent = "Show";
+            toggleButton.classList.remove('text-emerald-600');
+            toggleButton.classList.add('text-slate-400');
+        }
+    }
+}
+
+</script>
 @endsection
 

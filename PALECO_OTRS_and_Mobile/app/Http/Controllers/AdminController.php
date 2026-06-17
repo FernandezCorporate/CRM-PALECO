@@ -59,7 +59,7 @@ class AdminController extends Controller
         return view('admin.userManagement', compact('users', 'counts'));
     }
 
-    public function storeUser(Request $request)
+    public function addUser(Request $request)
     {
         // 1. Enforce strict, SQL injection-proof validation checks
         $validated = $request->validate([
@@ -93,5 +93,54 @@ class AdminController extends Controller
 
         // 4. Redirect the admin back with a clean success toast alert session payload
         return redirect()->route('admin.userManagement')->with('success', 'User account created successfully.');
+    }
+
+    public function updateUser(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'middle_name' => ['nullable', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'name_ext' => ['nullable', 'string', 'max:10'],
+
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                'unique:users,username,' . $user->id
+            ],
+
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                'unique:users,email,' . $user->id
+            ],
+
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+
+            'role' => ['required', new Enum(UserRole::class)],
+        ]);
+
+        $user->first_name = strtolower($validated['first_name']);
+        $user->middle_name = $validated['middle_name'] ? strtolower($validated['middle_name']) : null;
+        $user->last_name = strtolower($validated['last_name']);
+        $user->name_ext = $validated['name_ext'] ? strtolower($validated['name_ext']) : null;
+
+        $user->username = $validated['username'];
+        $user->email = strtolower($validated['email']);
+        $user->role = $validated['role'];
+
+        // only update password if provided
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->save();
+
+        return redirect()
+            ->route('admin.userManagement')
+            ->with('success', 'User updated successfully.');
     }
 }

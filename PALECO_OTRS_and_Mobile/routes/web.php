@@ -24,12 +24,17 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard');
 
     Route::prefix('admin')->middleware(['auth', 'can:access-admin'])->group(function () {
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('admin.dashboard');
 
-        Route::get('/users', [AdminController::class, 'userManagement'])->name('admin.userManagement');
-        Route::post('/users', [AdminController::class, 'storeUser'])->name('admin.addUser');
+        Route::get('/users', [AdminController::class, 'userManagement'])
+            ->name('admin.userManagement');
+
+        // CREATE
+        Route::post('/users', [AdminController::class, 'addUser'])
+            ->name('admin.addUser');
+
+        // UPDATE
+        Route::put('/users/{user}', [AdminController::class, 'updateUser'])
+            ->name('admin.updateUser');
     });
 
     Route::prefix('cwd')->middleware(['auth', 'can:access-cwd'])->group(function () {

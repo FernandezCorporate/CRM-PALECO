@@ -287,60 +287,32 @@
                     </div>
                 </div>
 
-                <!-- ROW 4: ROLE SELECTION CARDS GRID (4 SELECTIONS) -->
+                <!-- ROW 4: ROLE ASSIGNMENT -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Role Assignment *</label>
-                    
-                    <!-- Hidden parameter input proxy tracking state -->
-                    <input type="hidden" name="role" id="role-input" value="field_personnel">
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                        Role Assignment *
+                    </label>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        
-                        <!-- 1. Admin Card -->
-                        <div id="card-admin" onclick="selectRole('admin')" class="role-card p-3 border-2 rounded-xl cursor-pointer transition-all duration-200 flex flex-col justify-between h-20 border-slate-200 bg-white group box-border">
-                            <div id="icon-admin" class="text-slate-400 group-hover:text-slate-600 transition-colors">
-                                <svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-slate-800 m-0">Admin</p>
-                                <p class="text-[10px] text-slate-400 font-light mt-0.5 mb-0">IT Division — full system control</p>
-                            </div>
-                        </div>
+                    <select
+                        name="role"
+                        required
+                        class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 box-border text-slate-800 bg-white"
+                    >
+                        <option value="">-- Select Role --</option>
 
-                        <!-- 2. CWD Officer Card -->
-                        <div id="card-cwd" onclick="selectRole('cwd')" class="role-card p-3 border-2 rounded-xl cursor-pointer transition-all duration-200 flex flex-col justify-between h-20 border-slate-200 bg-white group box-border">
-                            <div id="icon-cwd" class="text-slate-400 group-hover:text-slate-600 transition-colors">
-                                <svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-slate-800 m-0">CWD Officer</p>
-                                <p class="text-[10px] text-slate-400 font-light mt-0.5 mb-0">Web ticket intake & monitoring</p>
-                            </div>
-                        </div>
+                        @foreach (\App\Enums\UserRole::cases() as $role)
+                            <option
+                                value="{{ $role->value }}"
+                                {{ old('role') === $role->value ? 'selected' : '' }}
+                            >
+                                {{ ucwords(str_replace('_', ' ', $role->value)) }}
+                            </option>
+                        @endforeach
+                    </select>
 
-                        <!-- 3. Foreman Card -->
-                        <div id="card-foreman" onclick="selectRole('foreman')" class="role-card p-3 border-2 rounded-xl cursor-pointer transition-all duration-200 flex flex-col justify-between h-20 border-slate-200 bg-white group box-border">
-                            <div id="icon-foreman" class="text-slate-400 group-hover:text-slate-600 transition-colors text-sm leading-none">👷</div>
-                            <div>
-                                <p class="text-xs font-bold text-slate-800 m-0">Foreman</p>
-                                <p class="text-[10px] text-slate-400 font-light mt-0.5 mb-0">In-team dispatch & ticket closure</p>
-                            </div>
-                        </div>
-
-                        <!-- 4. Field Personnel Card -->
-                        <div id="card-field_personnel" onclick="selectRole('field_personnel')" class="role-card p-3 border-2 rounded-xl cursor-pointer transition-all duration-200 flex flex-col justify-between h-20 border-slate-200 bg-white group box-border">
-                            <div id="icon-field_personnel" class="text-slate-400 group-hover:text-slate-600 transition-colors text-sm leading-none">🔧</div>
-                            <div>
-                                <p class="text-xs font-bold text-slate-800 m-0">Field Personnel</p>
-                                <p class="text-[10px] text-slate-400 font-light mt-0.5 mb-0">Mobile crew — on-ground response</p>
-                            </div>
-                        </div>
-
-                    </div>
+                    <p style="font-size: 11px; color: #64748b; margin-top: 6px;">
+                        Select the system role to assign to this account.
+                    </p>
                 </div>
 
             </div>
@@ -367,43 +339,6 @@ function toggleUserModal(show) {
         modal.classList.remove('hidden');
     } else {
         modal.classList.add('hidden');
-    }
-}
-
-function selectRole(role) {
-    document.getElementById('role-input').value = role;
-
-    // Reset layout cards back to default unselected classes
-    document.querySelectorAll('.role-card').forEach(card => {
-        card.classList.remove('border-emerald-600', 'ring-2', 'ring-emerald-100', 'bg-emerald-50/10');
-        card.classList.add('border-slate-200', 'bg-white');
-    });
-
-    // Reset default icon styling accent colors
-    ['admin', 'cwd', 'foreman', 'field_personnel'].forEach(roleKey => {
-        const iconNode = document.getElementById(`icon-${roleKey}`);
-        if(iconNode && !iconNode.innerHTML.includes('<svg')) {
-            // Skips raw emojis to keep text alignment native
-            return;
-        }
-        if(iconNode) {
-            iconNode.classList.add('text-slate-400');
-            iconNode.classList.remove('text-emerald-600');
-        }
-    });
-
-    // Apply active design styles onto selected card wrapper target
-    const activeCard = document.getElementById(`card-${role}`);
-    if (activeCard) {
-        activeCard.classList.remove('border-slate-200', 'bg-white');
-        activeCard.classList.add('border-emerald-600', 'ring-2', 'ring-emerald-100', 'bg-emerald-50/10');
-    }
-
-    // Convert icon state colors inside active card items
-    const activeIcon = document.getElementById(`icon-${role}`);
-    if (activeIcon && activeIcon.classList.contains('text-slate-400')) {
-        activeIcon.classList.remove('text-slate-400');
-        activeIcon.classList.add('text-emerald-600');
     }
 }
 

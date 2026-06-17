@@ -40,8 +40,8 @@ class AdminController extends Controller
             });
         });
 
-        // 💡 CHANGE: Fetch results with pagination (4 per page)
-        $users = $usersQuery->latest()->paginate(4)->withQueryString();
+        // 💡 CHANGE: Fetch results with pagination (10 per page)
+        $users = $usersQuery->latest()->paginate(10)->withQueryString();
 
         // 3. Process each user inside the paginated list collection
         $users->getCollection()->transform(function ($user) {
@@ -59,7 +59,7 @@ class AdminController extends Controller
         return view('admin.userManagement', compact('users', 'counts'));
     }
 
-        public function storeUser(Request $request)
+    public function storeUser(Request $request)
     {
         // 1. Enforce strict, SQL injection-proof validation checks
         $validated = $request->validate([

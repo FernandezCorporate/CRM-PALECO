@@ -169,7 +169,14 @@
 
                         <td style="padding: 15px; text-align: right; font-size: 18px; color: #666;">
                             <button type="button" onclick="openUserModal({{ $user->toJson() }})" style="background: none; border: none; cursor: pointer; margin-right: 10px;" title="Edit Account">✏️</button>
-                            <span style="cursor: pointer;" title="Toggle Activity State">👤❌</span>
+                            <form action="{{ route('admin.toggleStatus', $user->id) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to {{ $user->is_active ? 'deactivate' : 'activate' }} this account?');">
+                                @csrf
+                                @method('PATCH')
+                                
+                                <button type="submit" style="background: none; border: none; cursor: pointer; font-size: 18px; padding: 0;" title="{{ $user->is_active ? 'Deactivate Account' : 'Activate Account' }}">
+                                    {{ $user->is_active ? '🔴' : '🟢' }}
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 @empty

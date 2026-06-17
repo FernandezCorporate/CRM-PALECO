@@ -39,6 +39,10 @@ Route::middleware(['auth'])->group(function () {
         // UPDATE
         Route::put('/users/{user}', [AdminController::class, 'updateUser'])
             ->name('admin.updateUser');
+
+        // TOGGLE STATUS
+        Route::patch('/users/{user}/toggle-status', [AdminController::class, 'toggleStatus'])
+            ->name('admin.toggleStatus');
     });
 
     Route::prefix('cwd')->middleware(['auth', 'can:access-cwd'])->group(function () {

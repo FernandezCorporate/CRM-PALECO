@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
@@ -143,4 +144,23 @@ class AdminController extends Controller
             ->route('admin.userManagement')
             ->with('success', 'User updated successfully.');
     }
+
+    public function toggleStatus(User $user)
+        {
+            // 1. Safety check: Prevent the admin from deactivating their own account
+            if (Auth::id() === $user->id) {
+                return back()->withErrors(['user' => 'You cannot deactivate your currently active session account.']);
+            }
+
+            // 2. Flip the boolean value (if true, becomes false; if false, becomes true)
+            $user->is_active = !$user->is_active;
+            $user->save();
+
+            // 3. Determine the right word for the success flash message
+            $statusWord = $user->is_active ? 'activated' : 'deactivated';
+
+            return redirect()
+                ->route('admin.userManagement')
+                ->with('success', "User account has been {$statusWord}.");
+        }
 }

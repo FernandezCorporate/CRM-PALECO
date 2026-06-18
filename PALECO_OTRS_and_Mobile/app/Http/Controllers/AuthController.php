@@ -44,7 +44,7 @@ class AuthController extends Controller
                 ])->onlyInput('username');
             }
 
-            // 2. Check for role mismatch (Your existing code)
+            // 2. Check for role mismatch
             if (Auth::user()->role->value !== $credentials['role']) {
                 Auth::logout();
 
@@ -55,6 +55,11 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
+            // 💡 NEW: Manually log the successful login
+            activity()
+                ->causedBy(Auth::user())
+                ->log('logged in');
+
             return redirect()->intended('/');
         }
 
@@ -63,9 +68,16 @@ class AuthController extends Controller
         ])->onlyInput('username');
     }
 
-
     public function logout(Request $request)
     {
+        // 💡 NEW: Log the logout BEFORE destroying the session!
+        // If you run this after Auth::logout(), the system won't know who is logging out.
+        if (Auth::check()) {
+            activity()
+                ->causedBy(Auth::user())
+                ->log('logged out');
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();

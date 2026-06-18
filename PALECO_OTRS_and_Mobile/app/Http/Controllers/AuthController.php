@@ -35,7 +35,7 @@ class AuthController extends Controller
             'username' => $credentials['username'],
             'password' => $credentials['password'],
         ])) {
-            // 1. Check if the user account is deactivated
+            
             if (!Auth::user()->is_active) {
                 Auth::logout();
 
@@ -44,7 +44,6 @@ class AuthController extends Controller
                 ])->onlyInput('username');
             }
 
-            // 2. Check for role mismatch
             if (Auth::user()->role->value !== $credentials['role']) {
                 Auth::logout();
 
@@ -55,9 +54,10 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
-            // 💡 NEW: Manually log the successful login
+            // Secure Audit Log: Login
             activity()
                 ->causedBy(Auth::user())
+                ->withProperties(['ip_address' => $request->ip()])
                 ->log('logged in');
 
             return redirect()->intended('/');
@@ -70,11 +70,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        // 💡 NEW: Log the logout BEFORE destroying the session!
-        // If you run this after Auth::logout(), the system won't know who is logging out.
+        // Secure Audit Log: Logout
         if (Auth::check()) {
             activity()
                 ->causedBy(Auth::user())
+                ->withProperties(['ip_address' => $request->ip()])
                 ->log('logged out');
         }
 

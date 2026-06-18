@@ -10,23 +10,29 @@ use Illuminate\Validation\Rules\Enum;
 
 class AuthController extends Controller
 {
-    /**
-     * Show the login page.
-     */
-    public function showLogin()
-    {
-        return view('auth.login');
-    }
+    public function showLogin() { return view('auth.login'); }
 
-    /**
-     * Handle authentication attempt.
-     */
     public function authenticate(Request $request)
     {
-        $throttleKey = 'login:' . $request->ip();
+        $ipThrottleKey = 'login-ip:' . $request->ip();
+        $accountThrottleKey = 'login-account:' . $request->input('username');
 
-        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
-            return back()->withErrors(['username' => 'Too many attempts. Please wait.']);
+        // 1. IP Check (First line of defense)
+        if (RateLimiter::tooManyAttempts($ipThrottleKey, 20)) {
+            activity('security_alert')
+                ->withProperties(['ip_address' => $request->ip()])
+                ->log('account locked: too many attempts from IP');
+
+            return back()->withErrors(['username' => 'Too many attempts from this connection. Wait 1 minute.']);
+        }
+
+        // 2. Account Check (Second line of defense)
+        if (RateLimiter::tooManyAttempts($accountThrottleKey, 5)) {
+            activity('security_alert')
+                ->withProperties(['username' => $request->input('username')])
+                ->log('account locked: too many attempts for user, wait 15 minutes');
+
+            return back()->withErrors(['username' => 'This account is temporarily locked. Wait 15 minutes.']);
         }
 
         $credentials = $request->validate([
@@ -35,54 +41,56 @@ class AuthController extends Controller
             'role' => ['required', new Enum(UserRole::class)],
         ]);
 
-        // 1. Role Restriction Failure
+        // 3. Logic: Role restriction
         if (in_array($credentials['role'], [UserRole::FOREMAN->value, UserRole::FIELD_PERSONNEL->value])) {
-            RateLimiter::hit($throttleKey, 60);
-            activity('failed_login')->withProperties(['username' => $credentials['username'], 'reason' => 'Unauthorized role'])->log('failed login attempt');
+            $this->logFailure($credentials['username'], 'Unauthorized role', $ipThrottleKey, $accountThrottleKey);
             return back()->withErrors(['role' => 'This role is not allowed.'])->onlyInput('username');
         }
 
         if (Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']])) {
             
-            // 2. Account Deactivated Failure
+            // Logic: Deactivated check
             if (!Auth::user()->is_active) {
-                RateLimiter::hit($throttleKey, 60);
-                activity('failed_login')->withProperties(['username' => $credentials['username'], 'reason' => 'Account deactivated'])->log('failed login attempt');
+                $this->logFailure($credentials['username'], 'Account deactivated', $ipThrottleKey, $accountThrottleKey);
                 Auth::logout();
-                return back()->withErrors(['username' => 'Your account has been deactivated.'])->onlyInput('username');
+                return back()->withErrors(['username' => 'Account deactivated.'])->onlyInput('username');
             }
 
-            // 3. Role Mismatch Failure
+            // Logic: Role mismatch
             if (Auth::user()->role->value !== $credentials['role']) {
-                RateLimiter::hit($throttleKey, 60);
-                activity('failed_login')->withProperties(['username' => $credentials['username'], 'reason' => 'Role mismatch'])->log('failed login attempt');
+                $this->logFailure($credentials['username'], 'Role mismatch', $ipThrottleKey, $accountThrottleKey);
                 Auth::logout();
                 return back()->withErrors(['role' => 'Role mismatch.'])->onlyInput('username');
             }
 
-            // Success
-            RateLimiter::clear($throttleKey);
+            // SUCCESS: Reset both throttlers
+            RateLimiter::clear($ipThrottleKey);
+            RateLimiter::clear($accountThrottleKey);
+            
             $request->session()->regenerate();
             activity()->causedBy(Auth::user())->log('logged in');
             return redirect()->intended('/');
         }
 
-        // 4. Invalid Credentials Failure
-        RateLimiter::hit($throttleKey, 60);
-        activity('failed_login')->withProperties(['username' => $credentials['username'], 'reason' => 'Invalid credentials'])->log('failed login attempt');
-
+        // FAILURE: Increment both throttlers
+        $this->logFailure($credentials['username'], 'Invalid credentials', $ipThrottleKey, $accountThrottleKey);
         return back()->withErrors(['username' => 'Invalid credentials.'])->onlyInput('username');
     }
 
-    /**
-     * Handle logout.
-     */
+    private function logFailure($username, $reason, $ipKey, $accountKey)
+    {
+        // 60s lock for IP, 900s (15m) lock for Account
+        RateLimiter::hit($ipKey, 60); 
+        RateLimiter::hit($accountKey, 900);
+        
+        activity('failed_login')
+            ->withProperties(['username' => $username, 'reason' => $reason])
+            ->log('failed login attempt');
+    }
+
     public function logout(Request $request)
     {
-        if (Auth::check()) {
-            activity()->causedBy(Auth::user())->log('logged out');
-        }
-        
+        if (Auth::check()) { activity()->causedBy(Auth::user())->log('logged out'); }
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

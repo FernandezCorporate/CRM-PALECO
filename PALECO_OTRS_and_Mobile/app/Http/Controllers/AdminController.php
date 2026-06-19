@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Enums\UserRole;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rules\Enum;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,7 +42,7 @@ class AdminController extends Controller
             });
         });
 
-        // 💡 CHANGE: Fetch results with pagination (10 per page)
+        // Fetch results with pagination (10 per page)
         $users = $usersQuery->latest()->paginate(10)->withQueryString();
 
         // 3. Process each user inside the paginated list collection
@@ -60,33 +61,21 @@ class AdminController extends Controller
         return view('admin.userManagement', compact('users', 'counts'));
     }
 
-    public function addUser(Request $request)
+    public function addUser(StoreUserRequest $request)
     {
-        // 1. Enforce strict, SQL injection-proof validation checks
-        $validated = $request->validate([
-            'first_name' => ['required', 'string', 'max:255'],
-            'middle_name' => ['nullable', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'name_ext' => ['nullable', 'string', 'max:10'],
-            'username' => ['required', 'string', 'max:255', 'unique:users,username'], // Preserves case & checks uniqueness
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'], // Formats and checks unique emails
-            'password' => ['required', 'string', 'min:8', 'confirmed'], // Automatically checks password_confirmation match
-            'role' => ['required', new Enum(UserRole::class)],
-        ]);
+        // 1. Data is already strictly validated by StoreUserRequest
+        $validated = $request->validated();
 
         // 2. Map data and cleanly lowercase the required legal name string inputs
         $userData = [
-            'first_name' => strtolower($validated['first_name']),
+            'first_name'  => strtolower($validated['first_name']),
             'middle_name' => $validated['middle_name'] ? strtolower($validated['middle_name']) : null,
-            'last_name' => strtolower($validated['last_name']),
-            'name_ext' => $validated['name_ext'] ? strtolower($validated['name_ext']) : null,
-            'username' => $validated['username'], // Casing preserved natively
-            'email' => strtolower($validated['email']),
-            'password' => Hash::make($validated['password']), // Securely hashes password strings
-            'role' => $validated['role'],
-            
-            // 💡 Note on is_active: Because you set up ->default(true) inside your migration database layer,
-            // you don't even need to declare or pass it here. MySQL will automatically write a 1 (true) for you!
+            'last_name'   => strtolower($validated['last_name']),
+            'name_ext'    => $validated['name_ext'] ? strtolower($validated['name_ext']) : null,
+            'username'    => $validated['username'], // Casing preserved natively
+            'email'       => strtolower($validated['email']),
+            'password'    => Hash::make($validated['password']), // Securely hashes password strings
+            'role'        => $validated['role'],
         ];
 
         // 3. Commit row insertion securely via mass assignment rules
@@ -96,44 +85,22 @@ class AdminController extends Controller
         return redirect()->route('admin.userManagement')->with('success', 'User account created successfully.');
     }
 
-    public function updateUser(Request $request, User $user)
+    public function updateUser(UpdateUserRequest $request, User $user)
     {
-        $validated = $request->validate([
-            'first_name' => ['required', 'string', 'max:255'],
-            'middle_name' => ['nullable', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'name_ext' => ['nullable', 'string', 'max:10'],
+        // 1. Data is already strictly validated by UpdateUserRequest
+        $validated = $request->validated();
 
-            'username' => [
-                'required',
-                'string',
-                'max:255',
-                'unique:users,username,' . $user->id
-            ],
-
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                'unique:users,email,' . $user->id
-            ],
-
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-
-            'role' => ['required', new Enum(UserRole::class)],
-        ]);
-
-        $user->first_name = strtolower($validated['first_name']);
+        // 2. Update user properties
+        $user->first_name  = strtolower($validated['first_name']);
         $user->middle_name = $validated['middle_name'] ? strtolower($validated['middle_name']) : null;
-        $user->last_name = strtolower($validated['last_name']);
-        $user->name_ext = $validated['name_ext'] ? strtolower($validated['name_ext']) : null;
+        $user->last_name   = strtolower($validated['last_name']);
+        $user->name_ext    = $validated['name_ext'] ? strtolower($validated['name_ext']) : null;
 
         $user->username = $validated['username'];
-        $user->email = strtolower($validated['email']);
-        $user->role = $validated['role'];
+        $user->email    = strtolower($validated['email']);
+        $user->role     = $validated['role'];
 
-        // only update password if provided
+        // 3. Only update password if provided
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
         }
@@ -146,21 +113,21 @@ class AdminController extends Controller
     }
 
     public function toggleStatus(User $user)
-        {
-            // 1. Safety check: Prevent the admin from deactivating their own account
-            if (Auth::id() === $user->id) {
-                return back()->withErrors(['user' => 'You cannot deactivate your currently active session account.']);
-            }
-
-            // 2. Flip the boolean value (if true, becomes false; if false, becomes true)
-            $user->is_active = !$user->is_active;
-            $user->save();
-
-            // 3. Determine the right word for the success flash message
-            $statusWord = $user->is_active ? 'activated' : 'deactivated';
-
-            return redirect()
-                ->route('admin.userManagement')
-                ->with('success', "User account has been {$statusWord}.");
+    {
+        // 1. Safety check: Prevent the admin from deactivating their own account
+        if (Auth::id() === $user->id) {
+            return back()->withErrors(['user' => 'You cannot deactivate your currently active session account.']);
         }
+
+        // 2. Flip the boolean value
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        // 3. Determine the right word for the success flash message
+        $statusWord = $user->is_active ? 'activated' : 'deactivated';
+
+        return redirect()
+            ->route('admin.userManagement')
+            ->with('success', "User account has been {$statusWord}.");
+    }
 }

@@ -33,10 +33,11 @@ class User extends Authenticatable
     }
 
     public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logFillable() 
-            ->dontLogIfAttributesChangedOnly(['password']) 
-            ->setDescriptionForEvent(fn(string $eventName) => "User account has been {$eventName}");
-    }
+        {
+            return LogOptions::defaults()
+                ->useLogName('user_management') // 💡 Adds a specific log_name to the DB
+                ->logFillable() 
+                ->dontLogIfAttributesChangedOnly(['password']) 
+                ->setDescriptionForEvent(fn(string $eventName) => "User account has been {$eventName}");
+        }
 }

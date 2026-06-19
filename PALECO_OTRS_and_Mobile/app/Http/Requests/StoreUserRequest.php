@@ -2,19 +2,22 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\UserRole;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
-use Illuminate\Support\Str;
+use App\Enums\UserRole;     // Import Enum rules
+use Illuminate\Foundation\Http\FormRequest;     // Predefined; the base class for custom, logic-rich form validation requests.
+use Illuminate\Validation\Rules\Enum;       // Enables built-in validation to ensure inputs match defined Enum values.
+use Illuminate\Support\Str;     // Provides string manipulation functions
 
 class StoreUserRequest extends FormRequest
 {
+
+    // Determines if user is authorized to make this request.
     public function authorize(): bool
     {
         return true; 
     }
 
-    // 💡 Sanitization: Clean all strings before checking if they are unique
+    // Cleans user inputs before saving into database
+    // All fields, except username, are lowercased before being stored in the database for data integrity
     protected function prepareForValidation(): void
     {
         $this->merge([
@@ -27,6 +30,7 @@ class StoreUserRequest extends FormRequest
         ]);
     }
 
+    // Defines the validation rules that apply to the request data.
     public function rules(): array
     {
         return [
@@ -37,7 +41,7 @@ class StoreUserRequest extends FormRequest
             'username'    => ['required', 'string', 'max:255', 'unique:users,username'],
             'email'       => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password'    => ['required', 'string', 'min:8', 'confirmed'],
-            'role'        => ['required', new Enum(UserRole::class)],
+            'role'        => ['required', new Enum(UserRole::class)],   // Role input must match exactly one case defined in 'UserRole.php'
         ];
     }
 }

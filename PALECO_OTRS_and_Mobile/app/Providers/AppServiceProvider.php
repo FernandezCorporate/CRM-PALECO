@@ -2,23 +2,27 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Http\Request;
-use App\Models\User;
-use App\Enums\UserRole;
-use Spatie\Activitylog\Models\Activity;
+use Illuminate\Support\ServiceProvider;       // Provides the base class for all application service providers.
+use Illuminate\Support\Facades\Gate;          // Facade for defining authorization logic and permission gates.
+use Illuminate\Cache\RateLimiting\Limit;      // Defines rate limiting configurations and policies.
+use Illuminate\Support\Facades\RateLimiter;   // Manages and enforces application-wide rate limiting rules.
+use Illuminate\Http\Request;                  // Encapsulates the current HTTP request data.
+use App\Models\User;                          // Imports the User model for role-based authorization.
+use App\Enums\UserRole;                       // Imports the UserRole Enum for strict role checking.
+use Spatie\Activitylog\Models\Activity;       // Imports the Activity model to intercept and modify logs.
 
 class AppServiceProvider extends ServiceProvider
 {
+    // Bootstraps application services, such as authorization gates, global event listeners, and rate limiters.
     public function boot(): void
     {
-        // 1. Authorization Gates
+        // Centralized authorization gate to verify if a user holds the Administrator role; used in '\routes\web.php'.
         Gate::define('access-admin', fn(User $user) => $user->role === UserRole::ADMIN);
+        
+        // Centralized authorization gate to verify if a user holds the CWD role; used in '\routes\web.php'.
         Gate::define('access-cwd', fn(User $user) => $user->role === UserRole::CWD);
 
-        // 2. Global IP Logger: Intercepts every log entry
+        // Intercepts activity log creation to automatically inject the user's IP address into the metadata.
         Activity::creating(function (Activity $activity) {
             if (request()->ip()) {
                 $activity->properties = $activity->properties->merge([
@@ -27,15 +31,14 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        // 3. Rate Limiters
-        // IP-Based: 5 attempts per 1 minute
+        // Configures a rate limit policy allowing 20 login attempts per minute based on the requester's IP address.
         RateLimiter::for('login-ip', function (Request $request) {
-            return RateLimiter::hit($request->ip(), 20);
+            return Limit::perMinute(20)->by($request->ip());
         });
 
-        // Account-Based: 5 attempts per 15 minutes
+        // Configures a rate limit policy allowing 5 login attempts per 15 minutes based on the provided username.
         RateLimiter::for('login-account', function (Request $request) {
-            return RateLimiter::hit($request->input('username'), 5);
+            return Limit::perMinutes(15, 5)->by($request->input('username'));
         });
     }
 }

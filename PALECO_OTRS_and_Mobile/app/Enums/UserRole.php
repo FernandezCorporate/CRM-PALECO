@@ -1,6 +1,7 @@
 <?php
 namespace App\Enums;
 
+// Static values allowed for 'role' in 'users' table
 enum UserRole: string
 {
     case ADMIN = 'admin';

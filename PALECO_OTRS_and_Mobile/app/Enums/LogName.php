@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+// Static values allowed for 'log_name' in 'activity_logs' table
 enum LogName: string
 {
     case ADMIN_ACTION = 'admin_action';

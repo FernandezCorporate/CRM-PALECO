@@ -1,56 +1,69 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\AdminController;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use App\Enums\UserRole;
+// Import controllers to extract the views they render/redirect to.
+use App\Http\Controllers\AuthController;       
+use App\Http\Controllers\AdminController;       
 
+use Illuminate\Support\Facades\Route;           // Provides routing functions to map URLs to controller actions.
+use Illuminate\Support\Facades\Auth;            // Provides authorization functions to identify the current user.
+use App\Enums\UserRole;                         // Imports Enum roles for strict, type-safe authorization checks.
+
+// Route for requesting the login page.
 Route::get('/login', [AuthController::class, 'showLogin'])
     ->name('login')
-    ->middleware('guest');
+    ->middleware('guest'); // Redirects authenticated users away from the login page.
 
+// Route for submitting a login request.
 Route::post('/login', [AuthController::class, 'authenticate'])
-    ->middleware('guest');
+    ->middleware('guest'); // Ensures only unauthenticated users can attempt to log in.
+
 
 Route::middleware(['auth'])->group(function () {
 
+    // Central dashboard redirect based on user role.
     Route::get('/', function () {
         return match (Auth::user()->role) {
             UserRole::ADMIN => redirect()->route('admin.dashboard'),
             UserRole::CWD => redirect()->route('cwd.dashboard'),
-            default => abort(403),
+            default => abort(403), // Terminates the request if the role has no defined dashboard.
         };
     })->name('dashboard');
 
+    // Admin-specific routes protected by the 'access-admin' authorization gate in '\app\Providers\AppServiceProvider.php'.
     Route::prefix('admin')->middleware(['auth', 'can:access-admin'])->group(function () {
 
+        // Displays the 'administrative dashboard' view.
         Route::get('/dashboard', function () {
-                    return view('admin.dashboard');
-                })->name('admin.dashboard');
+            return view('admin.dashboard');
+        })->name('admin.dashboard');
 
+        // Displays the 'user management' view, listing all system users with search and filter capabilities.
         Route::get('/users', [AdminController::class, 'userManagement'])
             ->name('admin.userManagement');
 
-        // CREATE
+        // Creates a new user record in the database.
         Route::post('/users', [AdminController::class, 'addUser'])
             ->name('admin.addUser');
 
-        // UPDATE
+        // Updates an existing user's information.
         Route::put('/users/{user}', [AdminController::class, 'updateUser'])
             ->name('admin.updateUser');
 
-        // TOGGLE STATUS
+        // Toggles the active status of a specific user.
         Route::patch('/users/{user}/toggle-status', [AdminController::class, 'toggleStatus'])
             ->name('admin.toggleStatus');
     });
 
+    // CWD-specific routes protected by the 'access-cwd' authorization gate in '\app\Providers\AppServiceProvider.php'.
     Route::prefix('cwd')->middleware(['auth', 'can:access-cwd'])->group(function () {
+        
+        // Displays the CWD dashboard view.
         Route::get('/dashboard', function () {
             return view('cwd.dashboard');
         })->name('cwd.dashboard');
     });
 
+    // Logout route to invalidate the current user session.
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
 });

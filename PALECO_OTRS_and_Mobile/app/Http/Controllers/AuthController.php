@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
-// 1. Import your new LoginRequest
-use App\Http\Requests\LoginRequest; 
+use App\Enums\LogName;
+use App\Enums\LogDescription;
+use App\Http\Requests\LoginRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -13,31 +14,32 @@ class AuthController extends Controller
 {
     public function showLogin() { return view('auth.login'); }
 
-    // 2. Type-hint LoginRequest instead of the standard Request
-    public function authenticate(LoginRequest $request) 
+    public function authenticate(LoginRequest $request)
     {
         $ipThrottleKey = 'login-ip:' . $request->ip();
         $accountThrottleKey = 'login-account:' . $request->input('username');
 
+        // 1. IP Check
         if (RateLimiter::tooManyAttempts($ipThrottleKey, 20)) {
-            activity('security_alert')
+            activity(LogName::SECURITY_ALERT->value)
                 ->withProperties(['ip_address' => $request->ip()])
-                ->log('account locked: too many attempts from IP');
+                ->log(LogDescription::IP_LOCKED->value);
 
             return back()->withErrors(['username' => 'Too many attempts from this connection. Wait 1 minute.']);
         }
 
+        // 2. Account Check
         if (RateLimiter::tooManyAttempts($accountThrottleKey, 5)) {
-            activity('security_alert')
+            activity(LogName::SECURITY_ALERT->value)
                 ->withProperties(['username' => $request->input('username')])
-                ->log('account locked: too many attempts for user, wait 15 minutes');
+                ->log(LogDescription::USER_LOCKED->value);
 
             return back()->withErrors(['username' => 'This account is temporarily locked. Wait 15 minutes.']);
         }
 
-        // 3. Retrieve the already-validated data cleanly
         $credentials = $request->validated();
 
+        // 3. Role restriction
         if (in_array($credentials['role'], [UserRole::FOREMAN->value, UserRole::FIELD_PERSONNEL->value])) {
             $this->logFailure($credentials['username'], 'Unauthorized role', $ipThrottleKey, $accountThrottleKey);
             return back()->withErrors(['role' => 'This role is not allowed.'])->onlyInput('username');
@@ -57,14 +59,20 @@ class AuthController extends Controller
                 return back()->withErrors(['role' => 'Role mismatch.'])->onlyInput('username');
             }
 
+            // SUCCESS
             RateLimiter::clear($ipThrottleKey);
             RateLimiter::clear($accountThrottleKey);
             
             $request->session()->regenerate();
-            activity()->causedBy(Auth::user())->log('logged in');
+            
+            activity(LogName::SYSTEM_DEFAULT->value)
+                ->causedBy(Auth::user())
+                ->log(LogDescription::LOGGED_IN->value);
+                
             return redirect()->intended('/');
         }
 
+        // FAILURE
         $this->logFailure($credentials['username'], 'Invalid credentials', $ipThrottleKey, $accountThrottleKey);
         return back()->withErrors(['username' => 'Invalid credentials.'])->onlyInput('username');
     }
@@ -74,14 +82,19 @@ class AuthController extends Controller
         RateLimiter::hit($ipKey, 60); 
         RateLimiter::hit($accountKey, 900);
         
-        activity('failed_login')
+        activity(LogName::FAILED_LOGIN->value)
             ->withProperties(['username' => $username, 'reason' => $reason])
-            ->log('failed login attempt');
+            ->log(LogDescription::LOGIN_FAILED->value);
     }
 
     public function logout(Request $request)
     {
-        if (Auth::check()) { activity()->causedBy(Auth::user())->log('logged out'); }
+        if (Auth::check()) { 
+            activity(LogName::SYSTEM_DEFAULT->value)
+                ->causedBy(Auth::user())
+                ->log(LogDescription::LOGGED_OUT->value); 
+        }
+        
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

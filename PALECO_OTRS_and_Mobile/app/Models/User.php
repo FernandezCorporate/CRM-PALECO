@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use App\Enums\LogName;
+use App\Enums\LogDescription;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-// Spatie v5 imports
+// Your original, working Spatie imports
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -33,11 +35,13 @@ class User extends Authenticatable
     }
 
     public function getActivitylogOptions(): LogOptions
-        {
-            return LogOptions::defaults()
-                ->useLogName('user_management') // 💡 Adds a specific log_name to the DB
-                ->logFillable() 
-                ->dontLogIfAttributesChangedOnly(['password']) 
-                ->setDescriptionForEvent(fn(string $eventName) => "User account has been {$eventName}");
-        }
+    {
+        return LogOptions::defaults()
+            // 💡 Updated to use your LogName Enum
+            ->useLogName(LogName::USER_MANAGEMENT->value) 
+            ->logFillable() 
+            ->dontLogIfAttributesChangedOnly(['password']) 
+            // 💡 Updated to use your LogDescription Enum helper
+            ->setDescriptionForEvent(fn(string $eventName) => LogDescription::modelUpdated($eventName));
+    }
 }

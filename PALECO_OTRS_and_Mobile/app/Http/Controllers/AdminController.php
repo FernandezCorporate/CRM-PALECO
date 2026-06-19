@@ -112,7 +112,7 @@ class AdminController extends Controller
             ->with('success', 'User updated successfully.');
     }
 
-    public function toggleStatus(User $user)
+public function toggleStatus(User $user)
     {
         // 1. Safety check: Prevent the admin from deactivating their own account
         if (Auth::id() === $user->id) {
@@ -123,9 +123,16 @@ class AdminController extends Controller
         $user->is_active = !$user->is_active;
         $user->save();
 
-        // 3. Determine the right word for the success flash message
+        // 3. Determine the right word for the messages
         $statusWord = $user->is_active ? 'activated' : 'deactivated';
 
+        // 💡 4. EXPLICIT AUDIT LOG: Records exactly WHO did it, and to WHOM
+        activity('admin_action')
+            ->performedOn($user)         // "The victim" (The account being toggled)
+            ->causedBy(Auth::user())     // "The actor" (The admin clicking the button)
+            ->log("{$statusWord} user account");
+
+        // 5. Redirect back with success message
         return redirect()
             ->route('admin.userManagement')
             ->with('success', "User account has been {$statusWord}.");

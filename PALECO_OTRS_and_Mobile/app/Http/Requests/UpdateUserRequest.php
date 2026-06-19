@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\UserRole;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
+use Illuminate\Support\Str;
 
 class UpdateUserRequest extends FormRequest
 {
@@ -13,9 +14,21 @@ class UpdateUserRequest extends FormRequest
         return true; 
     }
 
+    // 💡 Sanitization: Clean data before validation
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'first_name'  => $this->first_name ? Str::lower($this->first_name) : null,
+            'middle_name' => $this->middle_name ? Str::lower($this->middle_name) : null,
+            'last_name'   => $this->last_name ? Str::lower($this->last_name) : null,
+            'name_ext'    => $this->name_ext ? Str::lower($this->name_ext) : null,
+            'email'       => $this->email ? Str::lower($this->email) : null,
+            'username'    => $this->username ? trim($this->username) : null,
+        ]);
+    }
+
     public function rules(): array
     {
-        // Dynamically grab the user object passed into the route URL (e.g., /admin/users/{user})
         $user = $this->route('user');
 
         return [

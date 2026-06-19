@@ -58,15 +58,16 @@ class AdminController extends Controller
 
     public function addUser(StoreUserRequest $request)
     {
+        // 💡 Data is already sanitized (lowercased/trimmed) AND validated!
         $validated = $request->validated();
 
         $userData = [
-            'first_name'  => strtolower($validated['first_name']),
-            'middle_name' => $validated['middle_name'] ? strtolower($validated['middle_name']) : null,
-            'last_name'   => strtolower($validated['last_name']),
-            'name_ext'    => $validated['name_ext'] ? strtolower($validated['name_ext']) : null,
+            'first_name'  => $validated['first_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
+            'last_name'   => $validated['last_name'],
+            'name_ext'    => $validated['name_ext'] ?? null,
             'username'    => $validated['username'], 
-            'email'       => strtolower($validated['email']),
+            'email'       => $validated['email'],
             'password'    => Hash::make($validated['password']), 
             'role'        => $validated['role'],
         ];
@@ -78,16 +79,16 @@ class AdminController extends Controller
 
     public function updateUser(UpdateUserRequest $request, User $user)
     {
+        // 💡 Data is already sanitized (lowercased/trimmed) AND validated!
         $validated = $request->validated();
 
-        $user->first_name  = strtolower($validated['first_name']);
-        $user->middle_name = $validated['middle_name'] ? strtolower($validated['middle_name']) : null;
-        $user->last_name   = strtolower($validated['last_name']);
-        $user->name_ext    = $validated['name_ext'] ? strtolower($validated['name_ext']) : null;
-
-        $user->username = $validated['username'];
-        $user->email    = strtolower($validated['email']);
-        $user->role     = $validated['role'];
+        $user->first_name  = $validated['first_name'];
+        $user->middle_name = $validated['middle_name'] ?? null;
+        $user->last_name   = $validated['last_name'];
+        $user->name_ext    = $validated['name_ext'] ?? null;
+        $user->username    = $validated['username'];
+        $user->email       = $validated['email'];
+        $user->role        = $validated['role'];
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
@@ -109,7 +110,6 @@ class AdminController extends Controller
         $user->is_active = !$user->is_active;
         $user->save();
 
-        // 💡 Fully Type-Safe Audit Log using your new Enums
         activity(LogName::ADMIN_ACTION->value)
             ->performedOn($user)
             ->causedBy(Auth::user())

@@ -37,6 +37,7 @@ class AuthController extends Controller
             return back()->withErrors(['username' => 'This account is temporarily locked. Wait 15 minutes.']);
         }
 
+        // 💡 Data is cleanly validated and trimmed by LoginRequest
         $credentials = $request->validated();
 
         // 3. Role restriction

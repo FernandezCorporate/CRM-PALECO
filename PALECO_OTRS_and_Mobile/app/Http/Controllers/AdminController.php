@@ -77,9 +77,8 @@ class AdminController extends Controller
         return redirect()->route('admin.userManagement')->with('success', 'User account created successfully.');
     }
 
-    public function updateUser(UpdateUserRequest $request, User $user)
+public function updateUser(UpdateUserRequest $request, User $user)
     {
-        // 💡 Data is already sanitized (lowercased/trimmed) AND validated!
         $validated = $request->validated();
 
         $user->first_name  = $validated['first_name'];
@@ -94,6 +93,14 @@ class AdminController extends Controller
             $user->password = Hash::make($validated['password']);
         }
 
+        // 💡 THE FIX: Check if Eloquent detected any actual changes
+        if (! $user->isDirty()) {
+            return redirect()
+                ->route('admin.userManagement')
+                ->with('success', 'No changes were made to the user profile.');
+        }
+
+        // Only runs if there are actual changes to commit
         $user->save();
 
         return redirect()

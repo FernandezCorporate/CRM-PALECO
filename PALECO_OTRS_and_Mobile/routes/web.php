@@ -55,6 +55,9 @@ Route::middleware(['auth'])->group(function () {
         
         Route::get('/departments', [AdminController::class, 'deptManagement'])
             ->name('admin.deptManagement');
+
+        Route::post('/departments', [AdminController::class, 'storeDept'])
+            ->name('admin.storeDept');
     });
 
     // CWD-specific routes protected by the 'access-cwd' authorization gate in '\app\Providers\AppServiceProvider.php'.

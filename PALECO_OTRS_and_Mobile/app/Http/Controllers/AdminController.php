@@ -14,6 +14,7 @@ use App\Enums\LogDescription;
 // Import Requests (Cleans and validates user inputs)
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\StoreDepartmentRequest;
 
 use Illuminate\Http\Request;    // Handles incoming HTTP requests.
 use Illuminate\Support\Str;     // Provides string manipulation modules.
@@ -185,16 +186,26 @@ class AdminController extends Controller
 
     public function deptManagement()
     {
-        // 💡 Use the new relationship defined in the Department model
-        $departments = Department::with('foremen')->orderBy('dept_name')->get();
+        // Fetch all departments with their foremen pre-loaded for display
+        $departments = Department::with(['users' => function ($query) {
+            $query->where('role', UserRole::FOREMAN);
+        }])->orderBy('dept_name')->get();
 
-        // Transform the foremen collection into a formatted string
+        // Format names in the controller
         $departments->each(function ($department) {
-            $department->foremen_list = $department->foremen->map(function ($user) {
+            $department->foremen_list = $department->users->map(function ($user) {
                 return Str::title($user->first_name . ' ' . $user->last_name);
             })->implode(', '); 
         });
 
         return view('admin.deptManagement', compact('departments'));
+    }
+
+    public function storeDept(StoreDepartmentRequest $request)
+    {
+        // Simple creation, no extra logic needed for foremen
+        Department::create($request->validated());
+
+        return redirect()->route('admin.deptManagement')->with('success', 'Department created successfully.');
     }
 }

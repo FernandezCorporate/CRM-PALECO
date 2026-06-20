@@ -87,7 +87,7 @@
                         <label for="password" class="text-xs font-semibold text-slate-700 tracking-wide">
                             Password <span class="text-rose-500">*</span>
                         </label>
-                        <span class="text-[10px] text-slate-400">Min. 8 characters</span>
+                        <span class="text-[10px] text-slate-400">Required</span>
                     </div>
                     <input type="password" id="password" name="password" placeholder="••••••••" required minlength="8" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 placeholder-slate-300 transition-all">
                 </div>

@@ -52,6 +52,9 @@ Route::middleware(['auth'])->group(function () {
         // Toggles the active status of a specific user.
         Route::patch('/users/{user}/toggle-status', [AdminController::class, 'toggleStatus'])
             ->name('admin.toggleStatus');
+        
+        Route::get('/departments', [AdminController::class, 'deptManagement'])
+            ->name('admin.deptManagement');
     });
 
     // CWD-specific routes protected by the 'access-cwd' authorization gate in '\app\Providers\AppServiceProvider.php'.

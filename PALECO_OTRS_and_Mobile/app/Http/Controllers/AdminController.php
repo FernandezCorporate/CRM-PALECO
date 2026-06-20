@@ -177,4 +177,22 @@ class AdminController extends Controller
             ->route('admin.userManagement')
             ->with('success', "User account has been {$statusWord}.");
     }
+
+    public function deptManagement()
+    {
+        // Eager load ONLY the users who have the 'foreman' role
+        $departments = Department::with(['users' => function ($query) {
+            $query->where('role', UserRole::FOREMAN);
+        }])->orderBy('dept_name')->get();
+
+        // Transform the collection to map out the formatted foremen names
+        $departments->each(function ($department) {
+            $department->foremen_list = $department->users->map(function ($user) {
+                return Str::title($user->first_name . ' ' . $user->last_name);
+            })->implode(', ');
+        });
+
+        // Return the newly named blade view
+        return view('admin.deptManagement', compact('departments'));
+    }
 }

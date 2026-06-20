@@ -29,4 +29,9 @@ class Department extends Model
             // 💡 Passes 'Department' to your updated dynamic helper for clear, readable logs
             ->setDescriptionForEvent(fn(string $eventName) => LogDescription::modelUpdated($eventName, 'Department'));
     }
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
 }

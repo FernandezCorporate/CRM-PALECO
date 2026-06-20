@@ -1,6 +1,6 @@
 @extends('admin.sidebar')
 
-@section('title', 'Admin Dashboard - PALECO CRM-CWD')
+@section('title', 'Admin Dashboard')
 
 @section('content')
     <h1>Main Dashboard</h1>

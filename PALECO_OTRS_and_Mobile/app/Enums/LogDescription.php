@@ -12,6 +12,7 @@ enum LogDescription: string
     case LOGGED_OUT = 'logged out';
 
     // Dynamic Event Helpers
+    
     // 1. Define the action made for the account status
     public static function userToggled(bool $isActive): string
     {
@@ -19,9 +20,10 @@ enum LogDescription: string
         return "{$status} user account";
     }
 
-    // 2. Define the event made to the user data (create or update)
-    public static function modelUpdated(string $eventName): string
+    // 2. Define the event made to the model data (create, update, delete)
+    // 💡 Added $modelName parameter with a default fallback
+    public static function modelUpdated(string $eventName, string $modelName = 'User account'): string
     {
-        return "User account has been {$eventName}";
+        return "{$modelName} has been {$eventName}";
     }
 }

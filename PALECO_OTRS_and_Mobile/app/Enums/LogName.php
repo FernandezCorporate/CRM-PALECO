@@ -10,4 +10,6 @@ enum LogName: string
     case FAILED_LOGIN = 'failed_login';
     case SYSTEM_DEFAULT = 'default';
     case USER_MANAGEMENT = 'user_management';
+    case DEPARTMENT_MANAGEMENT = 'department_management';
+    case TEAM_MANAGEMENT = 'team_management';
 }

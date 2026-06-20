@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 // Import models
 use App\Models\User;
+use App\Models\Department;
 
 // Import Enum rules
 use App\Enums\UserRole;
@@ -24,6 +25,9 @@ class AdminController extends Controller
     // Builds context data that shall be renderred on the 'User Management' page
     public function userManagement(Request $request)
     {
+
+        $departments = Department::orderBy('dept_name')->get();
+
         // Queries and stores the total count for each user role
         $counts = [
             'admin' => User::where('role', UserRole::ADMIN)->where('is_active', true)->count(),
@@ -33,7 +37,7 @@ class AdminController extends Controller
         ];
 
         // Intialize base query
-        $usersQuery = User::query();
+        $usersQuery = User::with('department');
 
         // Filters the users based on the selected user role buttons on the interface
         // Only executes when the selected card is not 'all'
@@ -71,7 +75,7 @@ class AdminController extends Controller
 
         // Specifies which blade template shall the user be redirected for this public function
         // Also passes the context data of queried users and the count for each role
-        return view('admin.userManagement', compact('users', 'counts'));
+        return view('admin.userManagement', compact('users', 'counts', 'departments'));
     }
 
     // Handles user account creation
@@ -91,6 +95,9 @@ class AdminController extends Controller
             'email'       => $validated['email'],
             'password'    => Hash::make($validated['password']), 
             'role'        => $validated['role'],
+            'department_id' => $validated['department_id'] ?? null, 
+            'shift_start'   => $validated['shift_start'] ?? null,   
+            'shift_end'     => $validated['shift_end'] ?? null,     
         ];
 
         // Executes an INSERT query into 'users' using the prepared values
@@ -116,6 +123,9 @@ class AdminController extends Controller
         $user->username    = $validated['username'];
         $user->email       = $validated['email'];
         $user->role        = $validated['role'];
+        $user->department_id = $validated['department_id'] ?? null; // Added
+        $user->shift_start   = $validated['shift_start'] ?? null;   // Added
+        $user->shift_end     = $validated['shift_end'] ?? null;     // Added
 
         // Ensures password will only be updated if the input was not empty
         if (!empty($validated['password'])) {

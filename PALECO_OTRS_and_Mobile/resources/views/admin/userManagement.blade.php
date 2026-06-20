@@ -151,8 +151,19 @@
                             </span>
                         </td>
 
-                        <td class="px-6 py-4 text-slate-500">
-                            {{ $user->team_shift ?? '—' }}
+                        <td class="px-6 py-4">
+                            @if($user->department)
+                                <div class="font-medium text-slate-800">{{ $user->department->dept_name }}</div>
+                            @else
+                                <div class="text-slate-400">—</div>
+                            @endif
+                            
+                            <div class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                {{ $user->shift_start ? \Carbon\Carbon::parse($user->shift_start)->format('g:i A') : '--:--' }} 
+                                to 
+                                {{ $user->shift_end ? \Carbon\Carbon::parse($user->shift_end)->format('g:i A') : '--:--' }}
+                            </div>
                         </td>
 
                         <td class="px-6 py-4 text-slate-500">
@@ -287,6 +298,28 @@
                             <input type="password" id="password-confirm-field" name="password_confirmation" required placeholder="Confirm Password *" minlength="8" class="w-full pl-3 pr-12 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-800 placeholder-slate-400">
                             <button type="button" onclick="togglePasswordVisibility('password-confirm-field', 'password-confirm-toggle-btn')" id="password-confirm-toggle-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent border-none text-[10px] font-bold text-slate-400 hover:text-slate-600 cursor-pointer p-1 uppercase tracking-wider select-none">Show</button>
                         </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
+                    <div class="col-span-12 sm:col-span-6">
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Department</label>
+                        <select id="user_department" name="department_id" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-800 bg-white appearance-none cursor-pointer">
+                            <option value="">-- No Department --</option>
+                            @foreach ($departments as $department)
+                                <option value="{{ $department->id }}">{{ $department->dept_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <div class="col-span-12 sm:col-span-3">
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Shift Start</label>
+                        <input type="time" id="user_shift_start" name="shift_start" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-800">
+                    </div>
+                    
+                    <div class="col-span-12 sm:col-span-3">
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Shift End</label>
+                        <input type="time" id="user_shift_end" name="shift_end" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-800">
                     </div>
                 </div>
 

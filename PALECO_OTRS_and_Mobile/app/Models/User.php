@@ -49,4 +49,8 @@ class User extends Authenticatable
             ->dontLogIfAttributesChangedOnly(['password'])      // Prevents logging when only the password is updated.
             ->setDescriptionForEvent(fn(string $eventName) => LogDescription::modelUpdated($eventName));    // Maps system events to human-readable descriptions via Enum.
     }
+
+    public function department(){
+        return $this->belongsTo(Department::class);
+    }
 }

@@ -1,4 +1,4 @@
-<div id="user-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity duration-200 font-sans">
+<div id="user-modal" data-auth-id="{{ auth()->id() }}" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity duration-200 font-sans">
     
     <div class="bg-white rounded-xl shadow-xl w-full max-w-xl mx-4 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
         
@@ -67,11 +67,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
                     <div class="col-span-12 sm:col-span-6">
                         <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Department <span class="text-rose-500">*</span></label>
-                        
                         <select id="user_department" name="department_id" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-800 bg-white appearance-none cursor-pointer">
-                            
                             <option value="">-- Select Department --</option>
-                            
                             @foreach ($departments as $department)
                                 <option value="{{ $department->id }}">{{ $department->dept_name }}</option>
                             @endforeach
@@ -90,8 +87,12 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Role Assignment <span class="text-rose-500">*</span></label>
-                    <select id="user_role" name="role" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-800 bg-white appearance-none cursor-pointer">
+                    <div class="flex justify-between items-baseline mb-2">
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider">Role Assignment <span class="text-rose-500">*</span></label>
+                        <span id="role-warning" class="hidden text-[10px] text-rose-500 font-semibold uppercase tracking-wider">Cannot change own role</span>
+                    </div>
+                    
+                    <select id="user_role" name="role" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-800 bg-white appearance-none cursor-pointer disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
                         <option value="">-- Select Role --</option>
                         @foreach (\App\Enums\UserRole::cases() as $role)
                             <option value="{{ $role->value }}">{{ ucwords(str_replace('_', ' ', $role->value)) }}</option>

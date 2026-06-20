@@ -122,10 +122,15 @@ class AdminController extends Controller
         $user->name_ext    = $validated['name_ext'] ?? null;
         $user->username    = $validated['username'];
         $user->email       = $validated['email'];
-        $user->role        = $validated['role'];
-        $user->department_id = $validated['department_id'] ?? null; // Added
-        $user->shift_start   = $validated['shift_start'] ?? null;   // Added
-        $user->shift_end     = $validated['shift_end'] ?? null;     // Added
+        
+        // 💡 Security Check: Only assign the role if the admin is editing SOMEONE ELSE
+        if (Auth::id() !== $user->id) {
+            $user->role = $validated['role'];
+        }
+        
+        $user->department_id = $validated['department_id'] ?? null; 
+        $user->shift_start   = $validated['shift_start'] ?? null;   
+        $user->shift_end     = $validated['shift_end'] ?? null;     
 
         // Ensures password will only be updated if the input was not empty
         if (!empty($validated['password'])) {
@@ -180,19 +185,16 @@ class AdminController extends Controller
 
     public function deptManagement()
     {
-        // Eager load ONLY the users who have the 'foreman' role
         $departments = Department::with(['users' => function ($query) {
             $query->where('role', UserRole::FOREMAN);
         }])->orderBy('dept_name')->get();
 
-        // Transform the collection to map out the formatted foremen names
         $departments->each(function ($department) {
             $department->foremen_list = $department->users->map(function ($user) {
                 return Str::title($user->first_name . ' ' . $user->last_name);
-            })->implode(', ');
+            })->implode(', '); 
         });
 
-        // Return the newly named blade view
         return view('admin.deptManagement', compact('departments'));
     }
 }

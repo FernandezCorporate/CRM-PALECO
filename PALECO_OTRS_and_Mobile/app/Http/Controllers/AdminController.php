@@ -185,12 +185,12 @@ class AdminController extends Controller
 
     public function deptManagement()
     {
-        $departments = Department::with(['users' => function ($query) {
-            $query->where('role', UserRole::FOREMAN);
-        }])->orderBy('dept_name')->get();
+        // 💡 Use the new relationship defined in the Department model
+        $departments = Department::with('foremen')->orderBy('dept_name')->get();
 
+        // Transform the foremen collection into a formatted string
         $departments->each(function ($department) {
-            $department->foremen_list = $department->users->map(function ($user) {
+            $department->foremen_list = $department->foremen->map(function ($user) {
                 return Str::title($user->first_name . ' ' . $user->last_name);
             })->implode(', '); 
         });

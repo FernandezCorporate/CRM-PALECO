@@ -44,7 +44,7 @@ class UpdateUserRequest extends FormRequest
             'email'       => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id], // Ensures email uniqueness, ignoring current record.
             'password'    => ['nullable', 'string', 'min:8', 'confirmed'], // Password is optional during updates; must match confirmation if provided.
             'role'        => ['required', new Enum(UserRole::class)],   // Role input must match exactly one case defined in 'UserRole.php'.
-            'department_id' => ['nullable', 'exists:departments,id'],
+            'department_id' => ['required', 'exists:departments,id'],
             'shift_start'   => ['nullable', 'string'],
             'shift_end'     => ['nullable', 'string'],
         ];

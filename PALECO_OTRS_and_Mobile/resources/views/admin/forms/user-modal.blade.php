@@ -66,9 +66,12 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
                     <div class="col-span-12 sm:col-span-6">
-                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Department</label>
-                        <select id="user_department" name="department_id" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-800 bg-white appearance-none cursor-pointer">
-                            <option value="">-- No Department --</option>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Department <span class="text-rose-500">*</span></label>
+                        
+                        <select id="user_department" name="department_id" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-800 bg-white appearance-none cursor-pointer">
+                            
+                            <option value="">-- Select Department --</option>
+                            
                             @foreach ($departments as $department)
                                 <option value="{{ $department->id }}">{{ $department->dept_name }}</option>
                             @endforeach

@@ -22,6 +22,7 @@ class User extends Authenticatable
     // Attributes that are mass-assignable via arrays or request data.
     protected $fillable = [
         'username', 'email', 'password', 'role', 
+        'department_id', 'shift_start', 'shift_end', // 💡 Added new columns here
         'first_name', 'middle_name', 'last_name', 'name_ext',
     ];
 

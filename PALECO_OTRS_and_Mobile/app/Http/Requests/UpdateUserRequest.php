@@ -46,7 +46,7 @@ class UpdateUserRequest extends FormRequest
             // 💡 If editing themselves, role is nullable. Otherwise, it is required.
             'role'        => [$isSelf ? 'nullable' : 'required', new Enum(UserRole::class)],
             
-            'department_id' => ['required', 'exists:departments,id'],
+            'department_id' => ['nullable', 'exists:departments,id'],
             'shift_start'   => ['nullable', 'string'],
             'shift_end'     => ['nullable', 'string'],
         ];

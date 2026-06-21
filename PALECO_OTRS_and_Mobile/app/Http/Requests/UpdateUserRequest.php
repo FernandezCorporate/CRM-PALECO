@@ -47,8 +47,8 @@ class UpdateUserRequest extends FormRequest
             'role'        => [$isSelf ? 'nullable' : 'required', new Enum(UserRole::class)],
             
             'department_id' => ['required', 'exists:departments,id'],
-            'shift_start'   => ['nullable', 'date_format:H:i'],
-            'shift_end'     => ['nullable', 'date_format:H:i'],
+            'shift_start'   => ['nullable', 'string'],
+            'shift_end'     => ['nullable', 'string'],
         ];
     }
 }

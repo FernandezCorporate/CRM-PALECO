@@ -3,13 +3,15 @@
 
 @section('content')
 
+@include('admin.prompts.admin-prompt')
+
 <div class="text-slate-800">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
             <h1 class="text-2xl font-bold text-slate-900 m-0">Department Management</h1>
             <p class="text-sm text-slate-500 mt-1">Admin-only — manage departments and their field teams.</p>
         </div>
-        <button type="button" onclick="document.getElementById('dept-modal').classList.remove('hidden')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-sm flex items-center gap-2">
+        <button type="button" onclick="openDeptModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-sm flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
             Add Department
         </button>
@@ -30,8 +32,16 @@
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         @forelse ($departments as $department)
             <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col min-h-[160px]">
-                <h3 class="text-lg font-bold text-slate-900 mb-2">{{ $department->dept_name }}</h3>
+                
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-lg font-bold text-slate-900">{{ $department->dept_name }}</h3>
+                    <button type="button" onclick='openDeptModal(@json($department))' class="text-slate-400 hover:text-emerald-600 transition-colors p-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </button>
+                </div>
+
                 <p class="text-[13px] text-slate-500 mb-6 line-clamp-2">{{ $department->dept_description ?? 'No description.' }}</p>
+                
                 <div class="mt-auto pt-4 border-t border-slate-100">
                     <div class="flex items-start gap-2 text-[13px] text-slate-700">
                         <span class="text-slate-500">Foreman:</span> 

@@ -15,6 +15,7 @@ use App\Enums\LogDescription;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Requests\StoreDepartmentRequest;
+use App\Http\Requests\UpdateDepartmentRequest;
 
 use Illuminate\Http\Request;    // Handles incoming HTTP requests.
 use Illuminate\Support\Str;     // Provides string manipulation modules.
@@ -129,7 +130,7 @@ class AdminController extends Controller
             $user->role = $validated['role'];
         }
         
-        $user->department_id = $validated['department_id'] ?? null; 
+        $user->department_id = $validated['department_id']; 
         $user->shift_start   = $validated['shift_start'] ?? null;   
         $user->shift_end     = $validated['shift_end'] ?? null;     
 
@@ -201,11 +202,31 @@ class AdminController extends Controller
         return view('admin.deptManagement', compact('departments'));
     }
 
-    public function storeDept(StoreDepartmentRequest $request)
+    public function addDept(StoreDepartmentRequest $request)
     {
         // Simple creation, no extra logic needed for foremen
         Department::create($request->validated());
 
         return redirect()->route('admin.deptManagement')->with('success', 'Department created successfully.');
+    }
+
+    public function updateDept(UpdateDepartmentRequest $request, Department $dept)
+    {
+        $validated = $request->validated();
+
+        $dept->dept_name = $validated['dept_name'];
+        $dept->dept_description = $validated['dept_description'];
+
+        if (! $dept->isDirty()){
+            return redirect()
+                ->route('admin.deptManagement')
+                ->with('success', 'No changes were made to the selected department.');
+        }
+
+        $dept->save();
+
+        return redirect()
+            ->route('admin.deptManagement')
+            ->with('success', 'Department updated successfully.');
     }
 }

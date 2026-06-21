@@ -4,7 +4,7 @@
 
 @section('content')
 
-@include('admin.prompts.user-prompt')
+@include('admin.prompts.admin-prompt')
 
 <div class="text-slate-800">
 

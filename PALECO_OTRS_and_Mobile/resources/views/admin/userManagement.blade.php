@@ -57,21 +57,47 @@
         </div>
     </div>
 
-    <form action="{{ route('admin.userManagement') }}" method="GET" class="flex flex-col md:flex-row justify-between items-center bg-white border border-slate-200 p-3 rounded-xl mb-6 shadow-sm gap-4">
-        <div class="w-full md:w-1/2 relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+    <form action="{{ route('admin.userManagement') }}" method="GET" class="flex flex-col lg:flex-row lg:items-end bg-white border border-slate-200 p-4 rounded-xl mb-6 shadow-sm gap-4">
+        
+        <div class="w-full lg:flex-1 shrink-0">
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-1">
+                Search Users
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name, username, or email..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
             </div>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name, username, or email..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
         </div>
 
-        <div class="flex flex-wrap gap-2 w-full md:w-auto overflow-x-auto">
-            <a href="{{ route('admin.userManagement', ['role' => 'all', 'search' => request('search')]) }}" class="px-3 py-1.5 rounded-md text-sm transition-colors {{ !request('role') || request('role') == 'all' ? 'bg-slate-100 text-slate-800 font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">All</a>
-            <a href="{{ route('admin.userManagement', ['role' => 'admin', 'search' => request('search')]) }}" class="px-3 py-1.5 rounded-md text-sm transition-colors {{ request('role') == 'admin' ? 'bg-slate-100 text-slate-800 font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">Admin</a>
-            <a href="{{ route('admin.userManagement', ['role' => 'cwd', 'search' => request('search')]) }}" class="px-3 py-1.5 rounded-md text-sm transition-colors {{ request('role') == 'cwd' ? 'bg-slate-100 text-slate-800 font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">CWD Officer</a>
-            <a href="{{ route('admin.userManagement', ['role' => 'foreman', 'search' => request('search')]) }}" class="px-3 py-1.5 rounded-md text-sm transition-colors {{ request('role') == 'foreman' ? 'bg-slate-100 text-slate-800 font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">Foreman</a>
-            <a href="{{ route('admin.userManagement', ['role' => 'field_personnel', 'search' => request('search')]) }}" class="px-3 py-1.5 rounded-md text-sm transition-colors {{ request('role') == 'field_personnel' ? 'bg-slate-100 text-slate-800 font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">Field Personnel</a>
+        <div class="w-full lg:w-48 shrink-0">
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-1">
+                Filter By
+            </label>
+            <select name="role" onchange="this.form.submit()" class="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-700 bg-white">
+                <option value="all" {{ request('role', 'all') == 'all' ? 'selected' : '' }}>All Roles</option>
+                @foreach(\App\Enums\UserRole::cases() as $roleOption)
+                    <option value="{{ $roleOption->value }}" {{ request('role') == $roleOption->value ? 'selected' : '' }}>
+                        {{ $roleOption->label() }}
+                    </option>
+                @endforeach
+            </select>
         </div>
+
+        <div class="w-full lg:w-48 shrink-0">
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-1">
+                Order By
+            </label>
+            <select name="sort" onchange="this.form.submit()" class="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-700 bg-white">
+                @foreach(\App\Enums\UserSort::cases() as $sortOption)
+                    <option value="{{ $sortOption->value }}" {{ request('sort') == $sortOption->value ? 'selected' : '' }}>
+                        {{ $sortOption->label() }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        
         <button type="submit" class="hidden"></button>
     </form>
 
@@ -111,23 +137,15 @@
                         </td>
 
                         <td class="px-6 py-4">
-                            @php
-                                $badgeClass = match($user->role->value ?? '') {
-                                    'admin' => 'bg-purple-100 text-purple-700',
-                                    'cwd' => 'bg-blue-100 text-blue-700',
-                                    'foreman' => 'bg-orange-100 text-orange-700',
-                                    default => 'bg-emerald-100 text-emerald-700',
-                                };
-                                $roleLabel = match($user->role->value ?? '') {
-                                    'admin' => 'Admin',
-                                    'cwd' => 'CWD Officer',
-                                    'foreman' => 'Foreman',
-                                    default => 'Field Personnel',
-                                };
-                            @endphp
-                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full {{ $badgeClass }}">
-                                {{ $roleLabel }}
-                            </span>
+                            @if($user->role)
+                                <span class="text-[11px] font-bold px-2.5 py-1 rounded-full {{ $user->role->badgeClasses() }}">
+                                    {{ $user->role->label() }}
+                                </span>
+                            @else
+                                <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
+                                    Unassigned
+                                </span>
+                            @endif
                         </td>
 
                         <td class="px-6 py-4">

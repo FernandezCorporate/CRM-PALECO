@@ -11,6 +11,7 @@ use App\Models\Team;
 use App\Enums\UserRole;
 use App\Enums\LogName;
 use App\Enums\LogDescription;
+use App\Enums\UserSort;
 
 // Import Requests (Cleans and validates user inputs)
 use App\Http\Requests\StoreUserRequest;
@@ -43,6 +44,10 @@ class AdminController extends Controller
 
         // Intialize base query
         $usersQuery = User::with('department');
+
+        $sort = UserSort::tryFrom($request->input('sort')) ?? UserSort::NEWEST;
+
+        $sort->applyOrder($usersQuery);
 
         // Filters the users based on the selected user role buttons on the interface
         // Only executes when the selected card is not 'all'

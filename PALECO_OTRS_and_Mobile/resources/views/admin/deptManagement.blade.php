@@ -31,29 +31,43 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         @forelse ($departments as $department)
-            <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col min-h-[160px]">
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col min-h-[160px] overflow-hidden">
                 
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="text-lg font-bold text-slate-900">{{ $department->dept_name }}</h3>
-                    <button type="button" onclick='openDeptModal(@json($department))' class="text-slate-400 hover:text-emerald-600 transition-colors p-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                    </button>
-                </div>
+                <div class="p-6 flex-1 flex flex-col">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-lg font-bold text-slate-900">{{ $department->dept_name }}</h3>
+                        <button type="button" onclick='openDeptModal(@json($department))' class="text-slate-400 hover:text-emerald-600 transition-colors p-1 shrink-0" title="Edit Department">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        </button>
+                    </div>
 
-                <p class="text-[13px] text-slate-500 mb-6 line-clamp-2">{{ $department->dept_description ?? 'No description.' }}</p>
-                
-                <div class="mt-auto pt-4 border-t border-slate-100">
-                    <div class="flex items-start gap-2 text-[13px] text-slate-700">
-                        <span class="text-slate-500">Foreman:</span> 
-                        <span class="font-medium text-slate-900">{{ $department->foremen_list ?: 'Unassigned' }}</span>
+                    <p class="text-[13px] text-slate-500 mb-6 line-clamp-2">{{ $department->dept_description ?? 'No description.' }}</p>
+                    
+                    <div class="mt-auto pt-4 border-t border-slate-100">
+                        <div class="flex items-start gap-2 text-[13px] text-slate-700">
+                            <span class="text-slate-500">Foreman:</span> 
+                            <span class="font-medium text-slate-900">{{ $department->foremen_list ?: 'Unassigned' }}</span>
+                        </div>
                     </div>
                 </div>
+
+                <a href="javascript:void(0)" onclick="openTeamViewModal({{ $department->id }})" class="block px-6 py-3 bg-slate-50/50 border-t border-slate-100 text-[13px] font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors group">
+                    <div class="flex justify-between items-center">
+                        <span>View teams</span>
+                        <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                </a>
+
             </div>
         @empty
-            <div class="col-span-full text-center text-slate-500 py-8">No departments found.</div>
+            <div class="col-span-full text-center text-slate-500 py-8 bg-white border border-slate-200 rounded-xl shadow-sm">
+                No departments found. Click "Add Department" to create your first one.
+            </div>
         @endforelse
     </div>
 </div>
 
 @include('admin.forms.dept-modal')
+@include('admin.modals.view-teams')
+
 @endsection

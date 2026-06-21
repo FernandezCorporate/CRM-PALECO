@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 // Import models
 use App\Models\User;
 use App\Models\Department;
+use App\Models\Team;
 
 // Import Enum rules
 use App\Enums\UserRole;
@@ -16,6 +17,8 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Requests\StoreDepartmentRequest;
 use App\Http\Requests\UpdateDepartmentRequest;
+use App\HttP\Requests\StoreTeamRequest;
+use App\Http\Requests\UpdateTeamRequest;
 
 use Illuminate\Http\Request;    // Handles incoming HTTP requests.
 use Illuminate\Support\Str;     // Provides string manipulation modules.
@@ -228,5 +231,16 @@ class AdminController extends Controller
         return redirect()
             ->route('admin.deptManagement')
             ->with('success', 'Department updated successfully.');
+    }
+
+    public function teamManagement(Department $dept)
+    {
+        $teams = $dept->teams()->orderBy('team_name')->get();
+
+        return response()->json([
+            'status' => 'success',
+            'department_name' => $dept->dept_name,
+            'teams' => $teams
+        ]);
     }
 }

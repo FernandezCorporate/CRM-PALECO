@@ -38,4 +38,9 @@ class Department extends Model
     {
         return $this->hasMany(User::class)->where('role', UserRole::FOREMAN);
     }
+
+    public function teams()
+    {
+        return $this->hasMany(Team::class);
+    }
 }

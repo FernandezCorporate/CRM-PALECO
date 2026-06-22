@@ -89,6 +89,10 @@ class AuthController extends Controller
             activity(LogName::SYSTEM_DEFAULT->value)
                 ->causedBy(Auth::user())
                 ->log(LogDescription::LOGGED_IN->value);
+
+            Auth::user()->update([
+                'last_login_at' => now(),
+            ]);
                 
             return redirect()->intended('/');
         }

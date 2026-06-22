@@ -163,8 +163,14 @@
                             </div>
                         </td>
 
-                        <td class="px-6 py-4 text-slate-500">
-                            {{ $user->last_login_at ? $user->last_login_at->format('Y-m-d H:i') : '—' }}
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            @if($user->last_login_at)
+                                <span class="text-slate-800 font-medium">{{ $user->last_login_at->format('M d, Y') }}</span>
+                                <br>
+                                <span class="text-[11px] text-slate-400">{{ $user->last_login_at->format('h:i A') }}</span>
+                            @else
+                                <span class="text-slate-400 italic">Never logged in</span>
+                            @endif
                         </td>
 
                         <td class="px-6 py-4">

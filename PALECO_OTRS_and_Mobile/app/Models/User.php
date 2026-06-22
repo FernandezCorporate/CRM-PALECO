@@ -21,7 +21,7 @@ class User extends Authenticatable
         'username', 'email', 'password', 'role', 
         'department_id', 'shift_start', 'shift_end',
         'first_name', 'middle_name', 'last_name', 'name_ext',
-        'contact',
+        'contact', 'last_login_at'
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -33,6 +33,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'role' => UserRole::class,
             'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 

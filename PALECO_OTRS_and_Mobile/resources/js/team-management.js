@@ -56,7 +56,6 @@ window.openTeamViewModal = async function(departmentId) {
                 listTeams.innerHTML = `<div class="text-center py-8 text-slate-500">No teams assigned.</div>`;
             } else {
                 listTeams.innerHTML = teamsData.map(team => {
-                    // 💡 Standard hyphen used here to prevent encoding errors
                     const shiftText = (team.shift_start && team.shift_end) 
                         ? `${formatTime(team.shift_start)} - ${formatTime(team.shift_end)}` 
                         : 'Flexible / Unassigned';
@@ -66,7 +65,7 @@ window.openTeamViewModal = async function(departmentId) {
                         : `<span class="bg-slate-200 text-slate-600 text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0">Inactive</span>`;
 
                     return `
-                        <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex justify-between items-start">
+                        <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all flex justify-between items-center group">
                             <div>
                                 <h4 class="text-base font-bold text-slate-900 mb-1">${team.team_name || 'Unnamed Team'}</h4>
                                 <div class="text-xs text-slate-500 flex items-center gap-1.5">
@@ -74,7 +73,15 @@ window.openTeamViewModal = async function(departmentId) {
                                     Shift: ${shiftText}
                                 </div>
                             </div>
-                            ${statusBadge}
+                            <div class="flex items-center gap-4">
+                                ${statusBadge}
+                                <button type="button" onclick="console.log('View Team Details Clicked for ID:', ${team.id})" class="text-slate-400 hover:text-emerald-600 transition-colors p-1" title="View Team Details">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>`;
                 }).join('');
             }
@@ -84,7 +91,6 @@ window.openTeamViewModal = async function(departmentId) {
                 listForemen.innerHTML = `<div class="text-center py-8 text-slate-500">No foremen assigned.</div>`;
             } else {
                 listForemen.innerHTML = foremenData.map(foreman => {
-                    // Force strings to prevent .charAt() from crashing on numbers or nulls
                     const fName = String(foreman.first_name || '');
                     const lName = String(foreman.last_name || '');
                     const contact = String(foreman.contact || 'No contact provided');
@@ -96,8 +102,11 @@ window.openTeamViewModal = async function(departmentId) {
                     const initialL = lName ? lName.charAt(0).toUpperCase() : '';
                     const initials = (initialF + initialL) || '--';
 
+                    // 💡 Note: We stringify the foreman object so it can be passed safely into your existing openViewModal function
+                    const foremanJson = JSON.stringify(foreman).replace(/"/g, '&quot;');
+
                     return `
-                        <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4 group">
                             <div class="flex items-center gap-3">
                                 <div class="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold border border-slate-200 shrink-0">
                                     ${initials}
@@ -107,9 +116,18 @@ window.openTeamViewModal = async function(departmentId) {
                                     <p class="text-xs text-slate-500">System Username: ${foreman.username || 'N/A'}</p>
                                 </div>
                             </div>
-                            <div class="text-xs text-slate-600 text-right md:min-w-[120px]">
-                                <p class="font-medium">${contact}</p>
-                                <p class="text-slate-400">${email}</p>
+                            <div class="flex items-center justify-between w-full md:w-auto gap-4">
+                                <div class="text-xs text-slate-600 text-left md:text-right md:min-w-[120px]">
+                                    <p class="font-medium">${contact}</p>
+                                    <p class="text-slate-400">${email}</p>
+                                </div>
+                                
+                                <button type="button" onclick="openViewModal(${foremanJson})" class="text-slate-400 hover:text-sky-600 transition-colors p-1" title="View Foreman Details">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </button>
                             </div>
                         </div>`;
                 }).join('');

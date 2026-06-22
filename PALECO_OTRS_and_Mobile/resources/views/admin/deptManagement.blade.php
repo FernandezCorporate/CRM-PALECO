@@ -94,5 +94,6 @@
 
 @include('admin.forms.dept-modal')
 @include('admin.modals.view-teams')
+@include('admin.modals.view-user-info')
 
 @endsection

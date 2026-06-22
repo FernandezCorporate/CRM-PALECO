@@ -112,10 +112,6 @@ class UserController extends Controller
         $user->shift_start   = $validated['shift_start'] ?? null;   
         $user->shift_end     = $validated['shift_end'] ?? null;     
 
-        if (!empty($validated['password'])) {
-            $user->password = Hash::make($validated['password']);
-        }
-
         if (! $user->isDirty()) {
             return redirect()
                 ->route('admin.userManagement')

@@ -7,7 +7,8 @@ window.openUserModal = function(user = null) {
     const methodContainer = document.getElementById('method-container');
     const modalTitle = document.getElementById('modal-title');
     const submitBtn = document.getElementById('submit-btn');
-    const passHint = document.getElementById('password-hint');
+
+    const securitySection = document.getElementById('security-section');
     const passField = document.getElementById('password-field');
     const passConfirm = document.getElementById('password-confirm-field');
     
@@ -26,11 +27,11 @@ window.openUserModal = function(user = null) {
         form.action = `/admin/users/${user.id}`;
         methodContainer.innerHTML = '<input type="hidden" name="_method" value="PUT">';
 
-        passHint.textContent = 'Leave blank to keep current password.';
+        securitySection.classList.add('hidden');
+        passField.disabled = true;
+        passConfirm.disabled = true;
         passField.required = false;
-        passField.placeholder = "New Password (Optional)";
         passConfirm.required = false;
-        passConfirm.placeholder = "Confirm New Password";
 
         document.getElementById('user_first_name').value = user.first_name || '';
         document.getElementById('user_middle_name').value = user.middle_name || '';
@@ -65,11 +66,11 @@ window.openUserModal = function(user = null) {
         form.action = `/admin/users`;
         methodContainer.innerHTML = '';
 
-        passHint.textContent = 'Minimum 8 characters. Both fields required.';
+    securitySection.classList.remove('hidden');
+        passField.disabled = false;
+        passConfirm.disabled = false;
         passField.required = true;
-        passField.placeholder = "Password *";
         passConfirm.required = true;
-        passConfirm.placeholder = "Confirm Password *";
         
         // 💡 Ensure dropdown is active for new users
         roleSelect.disabled = false;

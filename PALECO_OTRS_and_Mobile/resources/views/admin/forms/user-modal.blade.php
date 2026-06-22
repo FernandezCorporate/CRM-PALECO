@@ -46,7 +46,7 @@
                     </div>
                 </div>
 
-                <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                <div id="security-section" class="bg-slate-50 p-4 rounded-lg border border-slate-100">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-baseline mb-3 gap-1">
                         <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider m-0">Security</label>
                         <span id="password-hint" class="text-[11px] text-slate-500">Minimum 8 characters. Both fields required.</span>

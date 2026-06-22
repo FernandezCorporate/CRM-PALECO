@@ -41,7 +41,6 @@ class UpdateUserRequest extends FormRequest
             'name_ext'    => ['nullable', 'string', 'max:10'],
             'username'    => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
             'email'       => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'password'    => ['nullable', 'string', 'min:8', 'confirmed'],
             
             // 💡 If editing themselves, role is nullable. Otherwise, it is required.
             'role'        => [$isSelf ? 'nullable' : 'required', new Enum(UserRole::class)],

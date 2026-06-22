@@ -41,8 +41,8 @@
                         <input type="text" id="user_username" name="username" required placeholder="Enter login username" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-800 placeholder-slate-400">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Email Address <span class="text-rose-500">*</span></label>
-                        <input type="email" id="user_email" name="email" required placeholder="name@company.com" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-800 placeholder-slate-400">
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Email Address </span></label>
+                        <input type="email" id="user_email" name="email" placeholder="name@company.com" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-800 placeholder-slate-400">
                     </div>
                 </div>
 

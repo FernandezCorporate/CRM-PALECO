@@ -39,7 +39,7 @@ class StoreUserRequest extends FormRequest
             'last_name'   => ['required', 'string', 'max:255'],
             'name_ext'    => ['nullable', 'string', 'max:10'],
             'username'    => ['required', 'string', 'max:255', 'unique:users,username'],
-            'email'       => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'email'       => ['nullable', 'string', 'email', 'max:255', 'unique:users,email'],
             'password'    => ['required', 'string', 'min:8', 'confirmed'],
             'role'        => ['required', new Enum(UserRole::class)],   // Role input must match exactly one case defined in 'UserRole.php'
             'department_id' => ['nullable', 'exists:departments,id'],

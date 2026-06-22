@@ -25,6 +25,7 @@ use Illuminate\Http\Request;    // Handles incoming HTTP requests.
 use Illuminate\Support\Str;     // Provides string manipulation modules.
 use Illuminate\Support\Facades\Hash;    // Provides password hashing (uses the Bcryt hashing alogrithm)
 use Illuminate\Support\Facades\Auth;    // Provides authentication functions
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -173,15 +174,17 @@ class AdminController extends Controller
             return back()->withErrors(['user' => 'You cannot deactivate your currently active session account.']);
         }
 
-        // Toggles the current state of the account status by changing the 'is_active' boolean value
-        $user->is_active = !$user->is_active;
-        $user->save();
+        DB::transaction(function() use ($user) {
+            // Toggles the current state of the account status by changing the 'is_active' boolean value
+            $user->is_active = !$user->is_active;
+            $user->save();
 
-        // Manually logs the toggle account status into the 'activity_logs' table.
-        activity(LogName::ADMIN_ACTION->value)
-            ->performedOn($user)
-            ->causedBy(Auth::user())
-            ->log(LogDescription::userToggled($user->is_active));
+            // Manually logs the toggle account status into the 'activity_logs' table.
+            activity(LogName::ADMIN_ACTION->value)
+                ->performedOn($user)
+                ->causedBy(Auth::user())
+                ->log(LogDescription::userToggled($user->is_active));
+        });
 
         // Dynamically stores the toggle event that was performed
         $statusWord = $user->is_active ? 'activated' : 'deactivated';

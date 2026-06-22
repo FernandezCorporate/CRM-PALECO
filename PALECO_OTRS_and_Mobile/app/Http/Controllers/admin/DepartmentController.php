@@ -25,12 +25,9 @@ class DepartmentController extends Controller
         $departments = Department::with(['teams', 'users'])->orderBy('dept_name')->get();
 
         $departments->each(function ($department) {
-            $department->foremen_list = $department->users->where('role', UserRole::FOREMAN)->map(function ($user) {
-                return Str::title($user->first_name . ' ' . $user->last_name);
-            })->implode(' ');
-
             $department->total_teams = $department->teams->count();
-            $department->total_personnel = $department->users->count();
+            $department->total_personnel = $department->users->where('role', UserRole::FIELD_PERSONNEL)->count();
+            $department->total_foremen = $department->users->where('role', UserRole::FOREMAN)->count();
 
             $department->unique_shifts = $department->users
                 ->filter(fn($u) => $u->shift_start && $u->shift_end)

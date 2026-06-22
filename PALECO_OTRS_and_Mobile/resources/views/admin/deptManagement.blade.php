@@ -50,10 +50,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                             </svg>
                             <span class="text-[13px] font-medium">
-                                {{ $department->total_teams }} {{ Str::plural('team', $department->total_teams) }} &bull; {{ $department->total_personnel }} personnel
+                                {{ $department->total_teams }} {{ Str::plural('team', $department->total_teams) }} &bull; 
+                                {{ $department->total_personnel }} personnel &bull; 
+                                {{ $department->total_foremen }} foremen
                             </span>
                         </div>
-
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
                         <div class="flex items-start gap-2.5">
                             <svg class="w-4 h-4 text-slate-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -68,14 +72,7 @@
                                 @endforelse
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="mt-auto pt-4 border-t border-slate-100">
-                        <div class="flex items-start gap-2 text-[13px] text-slate-700">
-                            <span class="text-slate-500">Foreman:</span> 
-                            <span class="font-medium text-slate-900">{{ $department->foremen_list ?: 'Unassigned' }}</span>
-                        </div>
-                    </div>
+                    </div>                
                 </div>
 
                 <a href="javascript:void(0)" onclick="openTeamViewModal({{ $department->id }})" class="block px-6 py-3 bg-slate-50/50 border-t border-slate-100 text-[13px] font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors group">

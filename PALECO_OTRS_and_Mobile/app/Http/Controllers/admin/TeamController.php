@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 // Models
 use App\Models\Department;
+use App\Enums\UserRole;
 
 class TeamController extends Controller
 {
@@ -14,10 +15,14 @@ class TeamController extends Controller
     {
         $teams = $dept->teams()->orderBy('team_name')->get();
 
+        // 💡 The Enum ->value is safely inside the parenthesis
+        $foremen = $dept->users()->where('role', UserRole::FOREMAN->value)->get();
+
         return response()->json([
             'status' => 'success',
             'department_name' => $dept->dept_name,
-            'teams' => $teams
+            'teams' => $teams,
+            'foremen' => $foremen
         ]);
     }
 }

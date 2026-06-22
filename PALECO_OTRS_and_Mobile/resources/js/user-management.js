@@ -114,3 +114,67 @@ window.togglePasswordVisibility = function(fieldId, buttonId) {
         }
     }
 };
+
+window.openViewModal = function(user) {
+    if (!user) return;
+
+    // Construct Full Name
+    const firstName = user.first_name || '';
+    const lastName = user.last_name || '';
+    const fullName = `${firstName} ${user.middle_name ? user.middle_name.charAt(0) + '. ' : ''}${lastName} ${user.name_ext || ''}`.trim();
+    
+    // Set Avatar Initials
+    const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase() || '--';
+    document.getElementById('view_avatar_initials').textContent = initials;
+    
+    // Populate Text Fields
+    document.getElementById('view_full_name').textContent = fullName.replace(/\b\w/g, l => l.toUpperCase());
+    document.getElementById('view_username').textContent = user.username || '--';
+    document.getElementById('view_email').textContent = user.email || 'No email provided';
+    document.getElementById('view_contact').textContent = user.contact || '--';
+    
+    // Format Role
+    const roleValue = typeof user.role === 'object' ? user.role.value : user.role;
+    document.getElementById('view_role_badge').textContent = roleValue ? roleValue.replace('_', ' ') : 'Unassigned';
+
+    // Department & Shifts
+    document.getElementById('view_department').textContent = user.department ? user.department.dept_name : 'Unassigned';
+    document.getElementById('view_shift_start').textContent = formatTime(user.shift_start) || '--';
+    document.getElementById('view_shift_end').textContent = formatTime(user.shift_end) || '--';
+
+    // Last Login formatting (Handling standard MySQL Datetime string)
+    if (user.last_login_at) {
+        const date = new Date(user.last_login_at);
+        document.getElementById('view_last_login').textContent = date.toLocaleString('en-PH', { 
+            month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true 
+        });
+    } else {
+        document.getElementById('view_last_login').textContent = 'Never logged in';
+        document.getElementById('view_last_login').classList.add('italic', 'text-slate-400');
+    }
+
+    // Status Badge Logic
+    const statusBadge = document.getElementById('view_status_badge');
+    if (user.is_active) {
+        statusBadge.textContent = 'Active';
+        statusBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700';
+    } else {
+        statusBadge.textContent = 'Inactive';
+        statusBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-rose-100 text-rose-700';
+    }
+
+    // Show Modal
+    document.getElementById('view-modal').classList.remove('hidden');
+};
+
+window.closeViewModal = function() {
+    document.getElementById('view-modal').classList.add('hidden');
+};
+
+// Helper function to convert 24hr "14:30" to "2:30 PM"
+function formatTime(timeString) {
+    if (!timeString) return null;
+    const [hourString, minute] = timeString.split(':');
+    const hour = +hourString % 24;
+    return (hour % 12 || 12) + ':' + minute + (hour < 12 ? ' AM' : ' PM');
+}

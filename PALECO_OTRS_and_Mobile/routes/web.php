@@ -2,7 +2,10 @@
 
 // Import controllers to extract the views they render/redirect to.
 use App\Http\Controllers\AuthController;       
-use App\Http\Controllers\AdminController;       
+use App\Http\Controllers\admin\UserController;
+use App\Http\Controllers\admin\DepartmentController;
+use App\Http\Controllers\admin\TeamController;
+
 
 use Illuminate\Support\Facades\Route;           // Provides routing functions to map URLs to controller actions.
 use Illuminate\Support\Facades\Auth;            // Provides authorization functions to identify the current user.
@@ -38,32 +41,32 @@ Route::middleware(['auth'])->group(function () {
         })->name('admin.dashboard');
 
         // Displays the 'user management' view, listing all system users with search and filter capabilities.
-        Route::get('/users', [AdminController::class, 'userManagement'])
+        Route::get('/users', [UserController::class, 'userManagement'])
             ->name('admin.userManagement');
 
         // Creates a new user record in the database.
-        Route::post('/users', [AdminController::class, 'addUser'])
+        Route::post('/users', [UserController::class, 'addUser'])
             ->name('admin.addUser');
 
         // Updates an existing user's information.
-        Route::put('/users/{user}', [AdminController::class, 'updateUser'])
+        Route::put('/users/{user}', [UserController::class, 'updateUser'])
             ->name('admin.updateUser');
 
         // Toggles the active status of a specific user.
-        Route::patch('/users/{user}/toggle-status', [AdminController::class, 'toggleStatus'])
+        Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])
             ->name('admin.toggleStatus');
         
-        Route::get('/departments', [AdminController::class, 'deptManagement'])
+        Route::get('/departments', [DepartmentController::class, 'deptManagement'])
             ->name('admin.deptManagement');
 
-        Route::post('/departments', [AdminController::class, 'addDept'])
+        Route::post('/departments', [DepartmentController::class, 'addDept'])
             ->name('admin.addDept');
 
-        Route::put('/departments/{dept}', [AdminController::class, 'updateDept'])
+        Route::put('/departments/{dept}', [DepartmentController::class, 'updateDept'])
             ->name('admin.updateDept');
 
         Route::prefix('departments/{dept}')->group(function() {
-            Route::get('/teams', [AdminController::class, 'teamManagement'])
+            Route::get('/teams', [TeamController::class, 'teamManagement'])
             ->name('admin.teamManagement');
         });
     });

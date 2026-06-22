@@ -1,41 +1,34 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
-// Import models
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
+// Models & Enums
 use App\Models\User;
 use App\Models\Department;
-use App\Models\Team;
-
-// Import Enum rules
 use App\Enums\UserRole;
 use App\Enums\LogName;
 use App\Enums\LogDescription;
 use App\Enums\UserSort;
 
-// Import Requests (Cleans and validates user inputs)
+// Requests
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
-use App\Http\Requests\StoreDepartmentRequest;
-use App\Http\Requests\UpdateDepartmentRequest;
-use App\HttP\Requests\StoreTeamRequest;
-use App\Http\Requests\UpdateTeamRequest;
 
-use Illuminate\Http\Request;    // Handles incoming HTTP requests.
-use Illuminate\Support\Str;     // Provides string manipulation modules.
-use Illuminate\Support\Facades\Hash;    // Provides password hashing (uses the Bcryt hashing alogrithm)
-use Illuminate\Support\Facades\Auth;    // Provides authentication functions
+// Facades
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class AdminController extends Controller
+class UserController extends Controller
 {
-    // Builds context data that shall be renderred on the 'User Management' page
     public function userManagement(Request $request)
     {
-
         $departments = Department::orderBy('dept_name')->get();
 
-        // Queries and stores the total count for each user role
         $counts = [
             'admin' => User::where('role', UserRole::ADMIN)->where('is_active', true)->count(),
             'cwd' => User::where('role', UserRole::CWD)->where('is_active', true)->count(),
@@ -43,22 +36,14 @@ class AdminController extends Controller
             'field_personnel' => User::where('role', UserRole::FIELD_PERSONNEL)->where('is_active', true)->count(),
         ];
 
-        // Intialize base query
         $usersQuery = User::with('department');
-
         $sort = UserSort::tryFrom($request->input('sort')) ?? UserSort::NEWEST;
-
         $sort->applyOrder($usersQuery);
 
-        // Filters the users based on the selected user role buttons on the interface
-        // Only executes when the selected card is not 'all'
         $usersQuery->when($request->filled('role') && $request->role !== 'all', function ($query) use ($request) {
             return $query->where('role', $request->role);
         });
 
-        // Filters the users based on the search box keywords
-        // Keywords are matched with 'username', 'email', 'first_name', or 'last_name'
-        // Search filters only operate within the context of the currently selected role
         $usersQuery->when($request->filled('search'), function ($query) use ($request) {
             $search = $request->search;
             return $query->where(function ($subQuery) use ($search) {
@@ -69,10 +54,8 @@ class AdminController extends Controller
             });
         });
 
-        // Paginates search results and limits each query for up to 10 users only
         $users = $usersQuery->latest()->paginate(10)->withQueryString();
 
-        // Formats name fields into one variable stored as 'legal_full_name'
         $users->getCollection()->transform(function ($user) {
             $user->legal_full_name = collect([
                 $user->first_name ? Str::title($user->first_name) : null,
@@ -84,19 +67,13 @@ class AdminController extends Controller
             return $user;
         });
 
-        // Specifies which blade template shall the user be redirected for this public function
-        // Also passes the context data of queried users and the count for each role
         return view('admin.userManagement', compact('users', 'counts', 'departments'));
     }
 
-    // Handles user account creation
     public function addUser(StoreUserRequest $request)
     {
-        // Looks into the 'rules()' function of 'StoreUserRequest.php'
-        // It extracts only the specific pieces of data that successfully passed the defined rules
         $validated = $request->validated();
 
-        // Prepares the values to be stored into the 'users' table
         $userData = [
             'first_name'  => $validated['first_name'],
             'middle_name' => $validated['middle_name'] ?? null,
@@ -111,22 +88,15 @@ class AdminController extends Controller
             'shift_end'     => $validated['shift_end'] ?? null,     
         ];
 
-        // Executes an INSERT query into 'users' using the prepared values
         User::create($userData);
 
-        // Defines the redirect page of a user upon a successful insert
-        // Passes the context data for the success text that will be renderred on the interface
         return redirect()->route('admin.userManagement')->with('success', 'User account created successfully.');
     }
 
-    // Handles updating user information
     public function updateUser(UpdateUserRequest $request, User $user)
     {
-        // Looks into the 'rules()' function of 'UpdateUserRequest.php'
-        // It extracts only the specific pieces of data that successfully passed the defined rules
         $validated = $request->validated();
 
-        // Updates each attribute of the selected user with the new values
         $user->first_name  = $validated['first_name'];
         $user->middle_name = $validated['middle_name'] ?? null;
         $user->last_name   = $validated['last_name'];
@@ -134,7 +104,6 @@ class AdminController extends Controller
         $user->username    = $validated['username'];
         $user->email       = $validated['email'];
         
-        // 💡 Security Check: Only assign the role if the admin is editing SOMEONE ELSE
         if (Auth::id() !== $user->id) {
             $user->role = $validated['role'];
         }
@@ -143,112 +112,43 @@ class AdminController extends Controller
         $user->shift_start   = $validated['shift_start'] ?? null;   
         $user->shift_end     = $validated['shift_end'] ?? null;     
 
-        // Ensures password will only be updated if the input was not empty
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
         }
 
-        // Terminates the update if no changes were detected 
         if (! $user->isDirty()) {
             return redirect()
                 ->route('admin.userManagement')
                 ->with('success', 'No changes were made to the user profile.');
         }
 
-        // Commits the update query as long as there is at least one change detected
         $user->save();
 
-        // Defines the redirect page of a user upon successful update
-        // Passes the context data for the success text that will be renderred on the interface
         return redirect()
             ->route('admin.userManagement')
             ->with('success', 'User updated successfully.');
     }
 
-    // Handles the activation and deactivation of user accounts
     public function toggleStatus(User $user)
     {
-
-        // IMPORTANT! Prevents current admin users from deactivating their own accounts. 
         if (Auth::id() === $user->id) {
             return back()->withErrors(['user' => 'You cannot deactivate your currently active session account.']);
         }
 
         DB::transaction(function() use ($user) {
-            // Toggles the current state of the account status by changing the 'is_active' boolean value
             $user->is_active = !$user->is_active;
             $user->save();
 
-            // Manually logs the toggle account status into the 'activity_logs' table.
             activity(LogName::ADMIN_ACTION->value)
                 ->performedOn($user)
                 ->causedBy(Auth::user())
                 ->log(LogDescription::userToggled($user->is_active));
         });
 
-        // Dynamically stores the toggle event that was performed
         $statusWord = $user->is_active ? 'activated' : 'deactivated';
 
-        // Defines the redirect page of a user upon successful changing of account status
-        // Passes the context data for the success text that will be renderred on the interface
         return redirect()
             ->route('admin.userManagement')
             ->with('success', "User account has been {$statusWord}.");
-    }
-
-    public function deptManagement()
-    {
-        // Fetch all departments with their foremen pre-loaded for display
-        $departments = Department::with(['users' => function ($query) {
-            $query->where('role', UserRole::FOREMAN);
-        }])->orderBy('dept_name')->get();
-
-        // Format names in the controller
-        $departments->each(function ($department) {
-            $department->foremen_list = $department->users->map(function ($user) {
-                return Str::title($user->first_name . ' ' . $user->last_name);
-            })->implode(', '); 
-        });
-
-        return view('admin.deptManagement', compact('departments'));
-    }
-
-    public function addDept(StoreDepartmentRequest $request)
-    {
-        // Simple creation, no extra logic needed for foremen
-        Department::create($request->validated());
-
-        return redirect()->route('admin.deptManagement')->with('success', 'Department created successfully.');
-    }
-
-    public function updateDept(UpdateDepartmentRequest $request, Department $dept)
-    {
-        $validated = $request->validated();
-
-        $dept->dept_name = $validated['dept_name'];
-        $dept->dept_description = $validated['dept_description'];
-
-        if (! $dept->isDirty()){
-            return redirect()
-                ->route('admin.deptManagement')
-                ->with('success', 'No changes were made to the selected department.');
-        }
-
-        $dept->save();
-
-        return redirect()
-            ->route('admin.deptManagement')
-            ->with('success', 'Department updated successfully.');
-    }
-
-    public function teamManagement(Department $dept)
-    {
-        $teams = $dept->teams()->orderBy('team_name')->get();
-
-        return response()->json([
-            'status' => 'success',
-            'department_name' => $dept->dept_name,
-            'teams' => $teams
-        ]);
     }
 }

@@ -39,6 +39,7 @@ window.openUserModal = function(user = null) {
         document.getElementById('user_name_ext').value = user.name_ext || '';
         document.getElementById('user_username').value = user.username || '';
         document.getElementById('user_email').value = user.email || '';
+        document.getElementById('user_contact').value = user.contact || '';
         
         const roleValue = typeof user.role === 'object' ? user.role.value : user.role;
         roleSelect.value = roleValue || '';

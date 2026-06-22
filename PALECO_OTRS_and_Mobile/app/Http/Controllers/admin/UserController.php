@@ -80,7 +80,8 @@ class UserController extends Controller
             'last_name'   => $validated['last_name'],
             'name_ext'    => $validated['name_ext'] ?? null,
             'username'    => $validated['username'], 
-            'email'       => $validated['email'],
+            'email'       => $validated['email'] ?? null,
+            'contact'     => $validated['contact'],
             'password'    => Hash::make($validated['password']), 
             'role'        => $validated['role'],
             'department_id' => $validated['department_id'] ?? null, 
@@ -102,7 +103,8 @@ class UserController extends Controller
         $user->last_name   = $validated['last_name'];
         $user->name_ext    = $validated['name_ext'] ?? null;
         $user->username    = $validated['username'];
-        $user->email       = $validated['email'];
+        $user->email       = $validated['email'] ?? null;
+        $user->contact     = $validated['contact'];
         
         if (Auth::id() !== $user->id) {
             $user->role = $validated['role'];

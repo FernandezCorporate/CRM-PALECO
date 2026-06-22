@@ -40,6 +40,7 @@ class StoreUserRequest extends FormRequest
             'name_ext'    => ['nullable', 'string', 'max:10'],
             'username'    => ['required', 'string', 'max:255', 'unique:users,username'],
             'email'       => ['nullable', 'string', 'email', 'max:255', 'unique:users,email'],
+            'contact'     => ['required', 'string', 'regex:/^(09|\+639)\d{9}$/'],
             'password'    => ['required', 'string', 'min:8', 'confirmed'],
             'role'        => ['required', new Enum(UserRole::class)],   // Role input must match exactly one case defined in 'UserRole.php'
             'department_id' => ['nullable', 'exists:departments,id'],

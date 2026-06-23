@@ -5,24 +5,33 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-// Models
+use App\Models\Team;
 use App\Models\Department;
-use App\Enums\UserRole;
 
 class TeamController extends Controller
 {
-    public function teamManagement(Department $dept)
+    public function teamManagement(Request $request)
     {
-        $teams = $dept->teams()->orderBy('team_name')->get();
+        // 1. Fetch all departments to populate the dropdown filter
+        $departments = Department::orderBy('dept_name')->get();
 
-        // 💡 The Enum ->value is safely inside the parenthesis
-        $foremen = $dept->users()->where('role', UserRole::FOREMAN->value)->get();
+        // 2. Base query: Eager load relationships for efficiency
+        $teamQuery = Team::with(['users', 'department'])->orderBy('team_name');
 
-        return response()->json([
-            'status' => 'success',
-            'department_name' => $dept->dept_name,
-            'teams' => $teams,
-            'foremen' => $foremen
-        ]);
+        // 3. Apply Text Search (by team name)
+        $teamQuery->when($request->filled('search'), function ($query) use ($request) {
+            $search = $request->search;
+            return $query->where('team_name', 'like', "%{$search}%");
+        });
+
+        // 4. Apply Department Dropdown Filter
+        $teamQuery->when($request->filled('department') && $request->department !== 'all', function ($query) use ($request) {
+            return $query->where('department_id', $request->department);
+        });
+
+        // 5. Paginate results
+        $teams = $teamQuery->paginate(10)->withQueryString();
+
+        return view('admin.teamManagement', compact('teams', 'departments'));
     }
 }

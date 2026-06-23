@@ -98,7 +98,7 @@
                     </div>                
                 </div>
 
-                <a href="{{ route('admin.teamManagement', $department->id) }}" class="block px-6 py-3 bg-slate-50/50 border-t border-slate-100 text-[13px] font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors group">
+                <a href="{{ route('admin.teamManagement', ['department' => $department->id]) }}" class="block px-6 py-3 bg-slate-50/50 border-t border-slate-100 text-[13px] font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors group">
                     <div class="flex justify-between items-center">
                         <span>View teams</span>
                         <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
@@ -149,7 +149,7 @@
                             <a href="{{ route('admin.updateDeptForm', $department->id) }}" class="text-slate-400 hover:text-emerald-600 transition-colors mr-3" title="Edit Department">
                                 <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                             </a>
-                            <a href="{{ route('admin.teamManagement', $department->id) }}" class="text-slate-400 hover:text-sky-600 transition-colors ml-2" title="View Teams">
+                            <a href="{{ route('admin.teamManagement', ['department' => $department->id]) }}" class="text-slate-400 hover:text-sky-600 transition-colors ml-2" title="View Teams">
                                 <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -168,5 +168,7 @@
 
     @include('admin.paginations.shared-pagination', ['paginator' => $departments, 'itemName' => 'departments'])
 </div>
+
+<script src="{{ asset('js/view-toggle.js') }}"></script>
 
 @endsection

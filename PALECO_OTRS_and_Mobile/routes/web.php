@@ -1,90 +1,61 @@
 <?php
 
-// Import controllers to extract the views they render/redirect to.
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use App\Enums\UserRole;
+
 use App\Http\Controllers\AuthController;       
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\admin\DepartmentController;
 use App\Http\Controllers\admin\TeamController;
 
-
-use Illuminate\Support\Facades\Route;           // Provides routing functions to map URLs to controller actions.
-use Illuminate\Support\Facades\Auth;            // Provides authorization functions to identify the current user.
-use App\Enums\UserRole;                         // Imports Enum roles for strict, type-safe authorization checks.
-
-// Route for requesting the login page.
-Route::get('/login', [AuthController::class, 'showLogin'])
-    ->name('login')
-    ->middleware('guest'); // Redirects authenticated users away from the login page.
-
-// Route for submitting a login request.
-Route::post('/login', [AuthController::class, 'authenticate'])
-    ->middleware('guest'); // Ensures only unauthenticated users can attempt to log in.
-
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
+Route::post('/login', [AuthController::class, 'authenticate'])->middleware('guest');
 
 Route::middleware(['auth'])->group(function () {
 
-    // Central dashboard redirect based on user role.
     Route::get('/', function () {
         return match (Auth::user()->role) {
             UserRole::ADMIN => redirect()->route('admin.dashboard'),
             UserRole::CWD => redirect()->route('cwd.dashboard'),
-            default => abort(403), // Terminates the request if the role has no defined dashboard.
+            default => abort(403),
         };
     })->name('dashboard');
 
-    // Admin-specific routes protected by the 'access-admin' authorization gate in '\app\Providers\AppServiceProvider.php'.
     Route::prefix('admin')->middleware(['auth', 'can:access-admin'])->group(function () {
 
-        // Displays the 'administrative dashboard' view.
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('admin.dashboard');
+        Route::get('/dashboard', function () { return view('admin.dashboard'); })->name('admin.dashboard');
 
-        // Displays the 'user management' view, listing all system users with search and filter capabilities.
-        Route::get('/users', [UserController::class, 'userManagement'])
-            ->name('admin.userManagement');
+        Route::get('/users', [UserController::class, 'userManagement'])->name('admin.userManagement');
+        Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('admin.toggleStatus');
 
         Route::prefix('users')->group(function () {
             Route::get('/create', [UserController::class, 'addUserForm'])->name('admin.addUserForm'); 
             Route::post('/create', [UserController::class, 'addUser'])->name('admin.addUser');
-
             Route::get('/edit/{user}', [UserController::class, 'updateUserForm'])->name('admin.updateUserForm');
             Route::put('/edit/{user}', [UserController::class, 'updateUser'])->name('admin.updateUser'); 
-            
             Route::get('/{user}', [UserController::class, 'getUserDetails'])->name('admin.getUserDetails');
         });
 
-        // Toggles the active status of a specific user.
-        Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])
-            ->name('admin.toggleStatus');
+        Route::get('/departments', [DepartmentController::class, 'deptManagement'])->name('admin.deptManagement');
         
-        Route::get('/departments', [DepartmentController::class, 'deptManagement'])
-            ->name('admin.deptManagement');
-
         Route::prefix('departments')->group(function () {
             Route::get('/create', [DepartmentController::class, 'addDeptForm'])->name('admin.addDeptForm');
             Route::post('/create', [DepartmentController::class, 'addDept'])->name('admin.addDept');
-
             Route::get('/edit/{dept}', [DepartmentController::class, 'updateDeptForm'])->name('admin.updateDeptForm');
             Route::put('/edit/{dept}', [DepartmentController::class, 'updateDept'])->name('admin.updateDept');
         });
 
-        Route::prefix('departments/{dept}')->group(function() {
-            Route::get('/teams', [TeamController::class, 'teamManagement'])
-            ->name('admin.teamManagement');
+        // 💡 NEW: Global Team Routes
+        Route::prefix('teams')->group(function () {
+            Route::get('/', [TeamController::class, 'teamManagement'])->name('admin.teamManagement');
+            Route::get('/{team}/members', [TeamController::class, 'teamMemberManagement'])->name('admin.teamMemberManagement');
         });
     });
 
-    // CWD-specific routes protected by the 'access-cwd' authorization gate in '\app\Providers\AppServiceProvider.php'.
     Route::prefix('cwd')->middleware(['auth', 'can:access-cwd'])->group(function () {
-        
-        // Displays the CWD dashboard view.
-        Route::get('/dashboard', function () {
-            return view('cwd.dashboard');
-        })->name('cwd.dashboard');
+        Route::get('/dashboard', function () { return view('cwd.dashboard'); })->name('cwd.dashboard');
     });
 
-    // Logout route to invalidate the current user session.
-    Route::post('/logout', [AuthController::class, 'logout'])
-        ->name('logout');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

@@ -35,6 +35,13 @@ class Team extends Model
         return $this->belongsTo(Department::class);
     }
 
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'team_members', 'team_id', 'user_id')
+                    ->withPivot('role')
+                    ->withTimestamps();
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

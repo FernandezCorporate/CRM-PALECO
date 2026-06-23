@@ -41,6 +41,23 @@
         </div>
     </div>
 
+    <form action="{{ route('admin.deptManagement') }}" method="GET" class="flex flex-col lg:flex-row lg:items-end bg-white border border-slate-200 p-4 rounded-xl mb-6 shadow-sm gap-4">
+        
+        <div class="w-full shrink-0">
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-1">
+                Search Departments
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by department name or description..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+            </div>
+        </div>
+        
+        <button type="submit" class="hidden"></button>
+    </form>
+
     <div id="card-view-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-4">
         @forelse ($departments as $department)
             <div class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col min-h-[160px] overflow-hidden">

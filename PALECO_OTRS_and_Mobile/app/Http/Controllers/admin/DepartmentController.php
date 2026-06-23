@@ -22,25 +22,32 @@ class DepartmentController extends Controller
 {
     public function deptManagement(Request $request)
     {
-        // 💡 Changed ->get() to ->paginate(10)->withQueryString()
-        $departments = Department::with(['teams', 'users'])
-            ->orderBy('dept_name')
-            ->paginate(10)
-            ->withQueryString();
+        // 1. Start the base query
+        $deptQuery = Department::with(['teams', 'users'])->orderBy('dept_name');
 
-        // 💡 Use getCollection()->transform() for paginated items
+        // 2. Apply search filter if the user typed something
+        $deptQuery->when($request->filled('search'), function ($query) use ($request) {
+            $search = $request->search;
+            return $query->where(function ($subQuery) use ($search) {
+                $subQuery->where('dept_name', 'like', "%{$search}%")
+                         ->orWhere('dept_description', 'like', "%{$search}%");
+            });
+        });
+
+        // 3. Paginate the filtered results
+        $departments = $deptQuery->paginate(10)->withQueryString();
+
+        // 4. Transform the collection (Your existing logic)
         $departments->getCollection()->transform(function ($department) {
             $department->total_teams = $department->teams->count();
-            
-            // 💡 Ensure UserRole enum values are accessed correctly
-            $department->total_personnel = $department->users->where('role', UserRole::FIELD_PERSONNEL)->count();
-            $department->total_foremen = $department->users->where('role', UserRole::FOREMAN)->count();
+            $department->total_personnel = $department->users->where('role', \App\Enums\UserRole::FIELD_PERSONNEL)->count();
+            $department->total_foremen = $department->users->where('role', \App\Enums\UserRole::FOREMAN)->count();
 
             $department->unique_shifts = $department->teams
                 ->filter(fn($u) => $u->shift_start && $u->shift_end)
                 ->map(function($u) {
-                    $start = Carbon::parse($u->shift_start)->format('gA');
-                    $end = Carbon::parse($u->shift_end)->format('gA');
+                    $start = \Carbon\Carbon::parse($u->shift_start)->format('gA');
+                    $end = \Carbon\Carbon::parse($u->shift_end)->format('gA');
 
                     $start = str_replace(['12AM', '12PM'], ['12MN', '12NN'], $start);
                     $end = str_replace(['12AM', '12PM'], ['12MN', '12NN'], $end);

@@ -101,6 +101,12 @@ class UserController extends Controller
         return redirect()->route('admin.userManagement')->with('success', 'User account created successfully.');
     }
 
+    public function updateUserForm (User $user) {
+        $departments = Department::orderBy('dept_name')->get();
+
+        return view('admin.forms.userForm', compact('departments', 'user'));     
+    }
+
     public function updateUser(UpdateUserRequest $request, User $user)
     {
         $validated = $request->validated();

@@ -162,4 +162,8 @@ class UserController extends Controller
             ->route('admin.userManagement')
             ->with('success', "User account has been {$statusWord}.");
     }
+
+    public function getUserDetails(User $user){
+        return view('admin.userDetails', compact('user'));
+    }
 }

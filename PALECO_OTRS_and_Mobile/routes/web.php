@@ -49,7 +49,9 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/create', [UserController::class, 'addUser'])->name('admin.addUser');
 
             Route::get('/edit/{user}', [UserController::class, 'updateUserForm'])->name('admin.updateUserForm');
-            Route::put('/edit/{user}', [UserController::class, 'updateUser'])->name('admin.updateUser');          
+            Route::put('/edit/{user}', [UserController::class, 'updateUser'])->name('admin.updateUser'); 
+            
+            Route::get('/{user}', [UserController::class, 'getUserDetails'])->name('admin.getUserDetails');
         });
 
         // Toggles the active status of a specific user.

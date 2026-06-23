@@ -20,12 +20,19 @@ use Carbon\Carbon;
 
 class DepartmentController extends Controller
 {
-    public function deptManagement()
+    public function deptManagement(Request $request)
     {
-        $departments = Department::with(['teams', 'users'])->orderBy('dept_name')->get();
+        // 💡 Changed ->get() to ->paginate(10)->withQueryString()
+        $departments = Department::with(['teams', 'users'])
+            ->orderBy('dept_name')
+            ->paginate(10)
+            ->withQueryString();
 
-        $departments->each(function ($department) {
+        // 💡 Use getCollection()->transform() for paginated items
+        $departments->getCollection()->transform(function ($department) {
             $department->total_teams = $department->teams->count();
+            
+            // 💡 Ensure UserRole enum values are accessed correctly
             $department->total_personnel = $department->users->where('role', UserRole::FIELD_PERSONNEL)->count();
             $department->total_foremen = $department->users->where('role', UserRole::FOREMAN)->count();
 
@@ -42,6 +49,8 @@ class DepartmentController extends Controller
                 })
                 ->unique()
                 ->values();
+                
+            return $department;
         });
 
         return view('admin.deptManagement', compact('departments'));

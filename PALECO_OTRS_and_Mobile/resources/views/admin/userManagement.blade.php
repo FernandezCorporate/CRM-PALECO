@@ -222,7 +222,7 @@
             </tbody>
         </table>
     </div>
-    @include('admin.paginations.user-pagination')
+    @include('admin.paginations.shared-pagination', ['paginator' => $users, 'itemName' => 'users'])
 </div>
 
 @endsection

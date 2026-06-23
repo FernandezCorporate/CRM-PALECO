@@ -47,11 +47,21 @@ class DepartmentController extends Controller
         return view('admin.deptManagement', compact('departments'));
     }
 
+    public function addDeptForm(Request $request)
+    {
+        return view('admin.forms.deptForm');
+    }
+
     public function addDept(StoreDepartmentRequest $request)
     {
         Department::create($request->validated());
 
         return redirect()->route('admin.deptManagement')->with('success', 'Department created successfully.');
+    }
+
+    public function updateDeptForm(Department $dept)
+    {
+        return view('admin.forms.deptForm', compact('dept'));
     }
 
     public function updateDept(UpdateDepartmentRequest $request, Department $dept)

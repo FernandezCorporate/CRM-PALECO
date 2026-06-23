@@ -11,10 +11,10 @@
             <h1 class="text-2xl font-bold text-slate-900 m-0">Department Management</h1>
             <p class="text-sm text-slate-500 mt-1">Admin-only — manage departments and their field teams.</p>
         </div>
-        <button type="button" onclick="openDeptModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-sm flex items-center gap-2">
+        <a href={{ route('admin.addDeptForm') }} class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-sm flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
             Add Department
-        </button>
+        </a>
     </div>
 
     <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-lg mb-8 flex items-start gap-3 shadow-sm">
@@ -37,9 +37,9 @@
                 <div class="p-6 flex-1 flex flex-col">
                     <div class="flex justify-between items-start mb-2">
                         <h3 class="text-lg font-bold text-slate-900">{{ $department->dept_name }}</h3>
-                        <button type="button" onclick='openDeptModal(@json($department))' class="text-slate-400 hover:text-emerald-600 transition-colors p-1 shrink-0" title="Edit Department">
+                        <a href="{{ route('admin.updateDeptForm', $department->id) }}" class="text-slate-400 hover:text-emerald-600 transition-colors p-1 shrink-0" title="Edit Department">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                        </button>
+                        </a>
                     </div>
 
                     <p class="text-[13px] text-slate-500 mb-5 line-clamp-2">{{ $department->dept_description ?? 'No description.' }}</p>
@@ -91,9 +91,5 @@
         @endforelse
     </div>
 </div>
-
-@include('admin.forms.dept-modal')
-@include('admin.modals.view-teams')
-@include('admin.modals.view-user-info')
 
 @endsection

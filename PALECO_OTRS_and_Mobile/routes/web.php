@@ -61,11 +61,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/departments', [DepartmentController::class, 'deptManagement'])
             ->name('admin.deptManagement');
 
-        Route::post('/departments', [DepartmentController::class, 'addDept'])
-            ->name('admin.addDept');
+        Route::prefix('departments')->group(function () {
+            Route::get('/create', [DepartmentController::class, 'addDeptForm'])->name('admin.addDeptForm');
+            Route::post('/create', [DepartmentController::class, 'addDept'])->name('admin.addDept');
 
-        Route::put('/departments/{dept}', [DepartmentController::class, 'updateDept'])
-            ->name('admin.updateDept');
+            Route::get('/edit/{dept}', [DepartmentController::class, 'updateDeptForm'])->name('admin.updateDeptForm');
+            Route::put('/edit/{dept}', [DepartmentController::class, 'updateDept'])->name('admin.updateDept');
+        });
 
         Route::prefix('departments/{dept}')->group(function() {
             Route::get('/teams', [TeamController::class, 'teamManagement'])

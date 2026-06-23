@@ -44,8 +44,8 @@ class StoreUserRequest extends FormRequest
             'password'    => ['required', 'string', 'min:8', 'confirmed'],
             'role'        => ['required', new Enum(UserRole::class)],   // Role input must match exactly one case defined in 'UserRole.php'
             'department_id' => ['nullable', 'exists:departments,id'],
-            'shift_start'   => ['nullable', 'string'],
-            'shift_end'     => ['nullable', 'string'],
+            'shift_start'   => ['nullable', 'date_format:H:i'],
+            'shift_end'     => ['nullable', 'date_format:H:i'],
         ];
     }
 }

@@ -29,7 +29,7 @@ class DepartmentController extends Controller
             $department->total_personnel = $department->users->where('role', UserRole::FIELD_PERSONNEL)->count();
             $department->total_foremen = $department->users->where('role', UserRole::FOREMAN)->count();
 
-            $department->unique_shifts = $department->users
+            $department->unique_shifts = $department->teams
                 ->filter(fn($u) => $u->shift_start && $u->shift_end)
                 ->map(function($u) {
                     $start = Carbon::parse($u->shift_start)->format('gA');

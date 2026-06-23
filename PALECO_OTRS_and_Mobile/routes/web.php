@@ -44,14 +44,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/users', [UserController::class, 'userManagement'])
             ->name('admin.userManagement');
 
-        // Creates a new user record in the database.
-        Route::post('/users', [UserController::class, 'addUser'])
-            ->name('admin.addUser');
-
-        // Updates an existing user's information.
-        Route::put('/users/{user}', [UserController::class, 'updateUser'])
-            ->name('admin.updateUser');
-
+        Route::prefix('users')->group(function () {
+            Route::get('/create', [UserController::class, 'addUserForm'])->name('admin.addUserForm'); 
+            Route::post('/create', [UserController::class, 'addUser'])->name('admin.addUser');
+            Route::put('/edit/{user}', [UserController::class, 'updateUser'])->name('admin.updateUser');          
+        });
         // Toggles the active status of a specific user.
         Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])
             ->name('admin.toggleStatus');

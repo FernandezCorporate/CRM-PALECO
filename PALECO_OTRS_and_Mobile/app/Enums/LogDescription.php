@@ -1,7 +1,9 @@
 <?php
 
+// Defines the address of LogDescription.php
 namespace App\Enums;
 
+// Defines the valid description inputs
 enum LogDescription: string
 {
     // Static values allowed for 'description' in 'activity_logs' table
@@ -13,17 +15,16 @@ enum LogDescription: string
 
     // Dynamic Event Helpers
     
-    // 1. Define the action made for the account status
+    // Define the description for toggling of account status
     public static function userToggled(bool $isActive): string
     {
-        $status = $isActive ? 'activated' : 'deactivated';
-        return "{$status} user account";
+        $status = $isActive ? 'activated' : 'deactivated';  // One-line if-else statement to define the value of the variable.
+        return "{$status} user account";                    // Description string output
     }
 
-    // 2. Define the event made to the model data (create, update, delete)
-    // 💡 Added $modelName parameter with a default fallback
+    // Define the description for the event on the 'Users' table (create, update, delete)
     public static function modelUpdated(string $eventName, string $modelName = 'User account'): string
     {
-        return "{$modelName} has been {$eventName}";
+        return "{$modelName} has been {$eventName}";       // Description string output
     }
 }

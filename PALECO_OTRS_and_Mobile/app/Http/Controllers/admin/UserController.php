@@ -13,8 +13,8 @@ use App\Enums\LogName;
 use App\Enums\LogDescription;
 use App\Enums\UserSort;
 
-use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\user\StoreUserRequest;
+use App\Http\Requests\user\UpdateUserRequest;
 
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
@@ -63,7 +63,7 @@ class UserController extends Controller
             return $user;
         });
 
-        return view('admin.userManagement', compact('users', 'counts'));
+        return view('admin.pages.userManagement', compact('users', 'counts'));
     }
 
     public function addUserForm(Request $request)

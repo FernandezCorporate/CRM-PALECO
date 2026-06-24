@@ -26,6 +26,6 @@ class TeamController extends Controller
 
         $teams = $teamQuery->paginate(10)->withQueryString();
 
-        return view('admin.teamManagement', compact('teams', 'departments'));
+        return view('admin.pages.teamManagement', compact('teams', 'departments'));
     }
 }

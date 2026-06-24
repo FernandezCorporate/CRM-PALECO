@@ -1,4 +1,4 @@
-@extends('admin.sidebar')
+@extends('admin.base.sidebar')
 @section('title', isset($dept) ? 'Edit Department - PALECO CRM-CWD' : 'New Department - PALECO CRM-CWD')
 
 @section('content')

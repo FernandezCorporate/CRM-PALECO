@@ -7,11 +7,10 @@ use Illuminate\Http\Request;
 
 // Models & Enums
 use App\Models\Department;
-use App\Enums\UserRole;
 
 // Requests
-use App\Http\Requests\StoreDepartmentRequest;
-use App\Http\Requests\UpdateDepartmentRequest;
+use App\Http\Requests\department\StoreDepartmentRequest;
+use App\Http\Requests\department\UpdateDepartmentRequest;
 
 // Facades
 use Illuminate\Support\Str;
@@ -60,7 +59,7 @@ class DepartmentController extends Controller
             return $department;
         });
 
-        return view('admin.deptManagement', compact('departments'));
+        return view('admin.pages.deptManagement', compact('departments'));
     }
 
     public function addDeptForm(Request $request)

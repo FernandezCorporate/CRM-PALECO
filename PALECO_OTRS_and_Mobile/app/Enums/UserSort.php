@@ -1,9 +1,12 @@
 <?php
 
+// Defines the address of UserSort.php
 namespace App\Enums;
 
+// Defines the valid sorting options
 enum UserSort : string
 {
+    // Static values allowed for the <option> tag on the 'Order by' dropdown input 
     case NEWEST = 'newest';
     case OLDEST = 'oldest';
     case USERNAME_ASC = 'username_asc';
@@ -13,6 +16,8 @@ enum UserSort : string
     case FIRSTNAME_ASC = 'firstname_asc';
     case FIRSTNAME_DESC = 'firstname_desc';
 
+    // Defines the orderBy() methods for each UserSort case
+    // This sorting query is appended on the base query for the 'userManagement()' function in 'User.controller'
     public function applyOrder($query)
     {
         return match($this) {
@@ -27,6 +32,7 @@ enum UserSort : string
         };
     }
 
+    // Translates the backend value (lowercased) to a human-readable label (proper casing)
     public function label(): string
     {
         return match($this) {

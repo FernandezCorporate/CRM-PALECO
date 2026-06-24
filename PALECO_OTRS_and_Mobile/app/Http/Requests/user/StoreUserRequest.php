@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\user;
 
 use App\Enums\UserRole;
 use App\Enums\DayOfWeek;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth;
 
-class UpdateUserRequest extends FormRequest
+class StoreUserRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -30,24 +29,23 @@ class UpdateUserRequest extends FormRequest
 
     public function rules(): array
     {
-        $user = $this->route('user');
-        $isSelf = Auth::id() === $user->id;
-
         return [
             'first_name'    => ['required', 'string', 'max:255'],
             'middle_name'   => ['nullable', 'string', 'max:255'],
             'last_name'     => ['required', 'string', 'max:255'],
             'name_ext'      => ['nullable', 'string', 'max:10'],
-            'username'      => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
-            'email'         => ['nullable', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'username'      => ['required', 'string', 'max:255', 'unique:users,username'],
+            'email'         => ['nullable', 'string', 'email', 'max:255', 'unique:users,email'],
             'contact'       => ['required', 'string', 'regex:/^(09|\+639)\d{9}$/'],
-            'role'          => [$isSelf ? 'nullable' : 'required', new Enum(UserRole::class)],
+            'password'      => ['required', 'string', 'min:8', 'confirmed'],
+            'role'          => ['required', new Enum(UserRole::class)],
             'department_id' => ['nullable', 'exists:departments,id'],
             
+            // 💡 Notice 'after:start_time' is removed to allow overnight shifts
             'shifts'                 => ['nullable', 'array'],
             'shifts.*.day_of_week'   => ['required', new Enum(DayOfWeek::class)],
             'shifts.*.start_time'    => ['required', 'date_format:H:i'],
-            'shifts.*.end_time'      => ['required', 'date_format:H:i'],
+            'shifts.*.end_time'      => ['required', 'date_format:H:i'], 
         ];
     }
 
@@ -65,6 +63,7 @@ class UpdateUserRequest extends FormRequest
 
             $intervals = [];
 
+            // Convert all shifts to absolute minutes of the week
             foreach ($shifts as $index => $shift) {
                 if (!empty($shift['day_of_week']) && !empty($shift['start_time']) && !empty($shift['end_time'])) {
                     if (strpos($shift['start_time'], ':') !== false && strpos($shift['end_time'], ':') !== false) {
@@ -75,8 +74,9 @@ class UpdateUserRequest extends FormRequest
                         $startMin = ($dayIdx * 24 * 60) + ($sH * 60) + (int)$sM;
                         $endMin = ($dayIdx * 24 * 60) + ($eH * 60) + (int)$eM;
 
-                        if ($endMin <= $startMin) $endMin += (24 * 60);
+                        if ($endMin <= $startMin) $endMin += (24 * 60); // It crosses midnight
 
+                        // Handle Sunday rollover into Monday
                         if ($endMin > 7 * 24 * 60) {
                             $intervals[] = ['index' => $index, 'start' => $startMin, 'end' => 7 * 24 * 60];
                             $intervals[] = ['index' => $index, 'start' => 0, 'end' => $endMin - (7 * 24 * 60)];
@@ -87,6 +87,7 @@ class UpdateUserRequest extends FormRequest
                 }
             }
 
+            // Check for overlaps across all parsed intervals
             $count = count($intervals);
             for ($i = 0; $i < $count; $i++) {
                 for ($j = $i + 1; $j < $count; $j++) {

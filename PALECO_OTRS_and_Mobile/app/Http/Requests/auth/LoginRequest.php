@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Requests;
+// Define the address of LoginRequest.php
+namespace App\Http\Requests\auth;
 
 use App\Enums\UserRole;     // Import Enum rules
 use Illuminate\Foundation\Http\FormRequest;     // Predefined; the base class for custom, logic-rich form validation requests.

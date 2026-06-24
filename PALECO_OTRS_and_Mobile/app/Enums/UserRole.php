@@ -1,14 +1,18 @@
 <?php
+
+// Defines the address of UserRole.php
 namespace App\Enums;
 
+// Defines the valid user/account role inputs
 enum UserRole: string
 {
+    // Static values allowed for 'role' in 'users' table
     case ADMIN = 'admin';
     case CWD = 'cwd';
     case FOREMAN = 'foreman';
     case FIELD_PERSONNEL = 'field_personnel';
 
-    // 💡 Translates the backend value to a human-readable label
+    // Translates the backend value (lowercased) to a human-readable label (proper casing)
     public function label(): string
     {
         return match($this) {
@@ -19,8 +23,7 @@ enum UserRole: string
         };
     }
 
-    // 💡 Dictates the Tailwind CSS colors for the UI badges
-    // Returning full class strings prevents Tailwind from accidentally purging them
+    // Dictates the Tailwind CSS colors for the UI badges
     public function badgeClasses(): string
     {
         return match($this) {

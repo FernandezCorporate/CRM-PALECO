@@ -1,13 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+// Define the address of AuthController.php
+namespace App\Http\Controllers\auth;
+
+use App\Http\Controllers\Controller;
 
 // Import Enum rules
 use App\Enums\UserRole;
 use App\Enums\LogName;
 use App\Enums\LogDescription;
 
-use App\Http\Requests\LoginRequest;     // Import Requests (Cleans and validates user inputs)
+use App\Http\Requests\auth\LoginRequest;     // Import Requests (Cleans and validates user inputs)
 use Illuminate\Http\Request;    // Handles incoming HTTP requests
 use Illuminate\Support\Facades\Auth;    // Provides authentication functions
 use Illuminate\Support\Facades\RateLimiter;     // Provides rate limiting functions

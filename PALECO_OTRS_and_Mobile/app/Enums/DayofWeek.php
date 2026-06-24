@@ -1,9 +1,12 @@
 <?php
 
-namespace App\Enums;
+// Defines the address of DayofWeek.php
+namespace App\Enums;    
 
-enum DayOfWeek: string
+// Defines the valid day inputs
+enum DayOfWeek: string  
 {
+    // Static values allowed for 'day' in 'user_shifts' and 'team_shifts' table
     case MONDAY = 'Monday';
     case TUESDAY = 'Tuesday';
     case WEDNESDAY = 'Wednesday';

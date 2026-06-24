@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 // Models & Enums
 use App\Models\User;
 use App\Models\Department;
+use App\Models\UserShift;
 use App\Enums\UserRole;
 use App\Enums\LogName;
 use App\Enums\LogDescription;
@@ -27,8 +28,6 @@ class UserController extends Controller
 {
     public function userManagement(Request $request)
     {
-        $departments = Department::orderBy('dept_name')->get();
-
         $counts = [
             'admin' => User::where('role', UserRole::ADMIN)->where('is_active', true)->count(),
             'cwd' => User::where('role', UserRole::CWD)->where('is_active', true)->count(),
@@ -67,13 +66,12 @@ class UserController extends Controller
             return $user;
         });
 
-        return view('admin.userManagement', compact('users', 'counts', 'departments'));
+        return view('admin.userManagement', compact('users', 'counts'));
     }
 
     public function addUserForm(Request $request)
     {
         $departments = Department::orderBy('dept_name')->get();
-
         return view('admin.forms.userForm', compact('departments'));
     }
 
@@ -81,29 +79,35 @@ class UserController extends Controller
     {
         $validated = $request->validated();
 
-        $userData = [
-            'first_name'  => $validated['first_name'],
-            'middle_name' => $validated['middle_name'] ?? null,
-            'last_name'   => $validated['last_name'],
-            'name_ext'    => $validated['name_ext'] ?? null,
-            'username'    => $validated['username'], 
-            'email'       => $validated['email'] ?? null,
-            'contact'     => $validated['contact'],
-            'password'    => Hash::make($validated['password']), 
-            'role'        => $validated['role'],
-            'department_id' => $validated['department_id'] ?? null, 
-            'shift_start'   => $validated['shift_start'] ?? null,   
-            'shift_end'     => $validated['shift_end'] ?? null,     
-        ];
+        DB::transaction(function() use ($validated, $request) {
+            $user = User::create([
+                'first_name'    => $validated['first_name'],
+                'middle_name'   => $validated['middle_name'] ?? null,
+                'last_name'     => $validated['last_name'],
+                'name_ext'      => $validated['name_ext'] ?? null,
+                'username'      => $validated['username'], 
+                'email'         => $validated['email'] ?? null,
+                'contact'       => $validated['contact'],
+                'password'      => Hash::make($validated['password']), 
+                'role'          => $validated['role'],
+                'department_id' => $validated['department_id'] ?? null, 
+            ]);
 
-        User::create($userData);
+            if ($request->has('shifts')) {
+                foreach ($request->shifts as $shiftData) {
+                    $user->shifts()->create($shiftData);
+                }
+            }
+        });
 
         return redirect()->route('admin.userManagement')->with('success', 'User account created successfully.');
     }
 
-    public function updateUserForm (User $user) {
+    public function updateUserForm(User $user) 
+    {
         $departments = Department::orderBy('dept_name')->get();
-
+        $user->load('shifts');
+        
         return view('admin.forms.userForm', compact('departments', 'user'));     
     }
 
@@ -111,33 +115,31 @@ class UserController extends Controller
     {
         $validated = $request->validated();
 
-        $user->first_name  = $validated['first_name'];
-        $user->middle_name = $validated['middle_name'] ?? null;
-        $user->last_name   = $validated['last_name'];
-        $user->name_ext    = $validated['name_ext'] ?? null;
-        $user->username    = $validated['username'];
-        $user->email       = $validated['email'] ?? null;
-        $user->contact     = $validated['contact'];
-        
-        if (Auth::id() !== $user->id) {
-            $user->role = $validated['role'];
-        }
-        
-        $user->department_id = $validated['department_id']; 
-        $user->shift_start   = $validated['shift_start'] ?? null;   
-        $user->shift_end     = $validated['shift_end'] ?? null;     
+        DB::transaction(function() use ($request, $user, $validated) {
+            $user->first_name   = $validated['first_name'];
+            $user->middle_name  = $validated['middle_name'] ?? null;
+            $user->last_name    = $validated['last_name'];
+            $user->name_ext     = $validated['name_ext'] ?? null;
+            $user->username     = $validated['username'];
+            $user->email        = $validated['email'] ?? null;
+            $user->contact      = $validated['contact'];
+            
+            if (Auth::id() !== $user->id) {
+                $user->role = $validated['role'];
+            }
+            
+            $user->department_id = $validated['department_id']; 
+            $user->save();
 
-        if (! $user->isDirty()) {
-            return redirect()
-                ->route('admin.userManagement')
-                ->with('success', 'No changes were made to the user profile.');
-        }
+            $user->shifts()->delete();
+            if ($request->has('shifts')) {
+                foreach ($request->shifts as $shiftData) {
+                    $user->shifts()->create($shiftData);
+                }
+            }
+        });
 
-        $user->save();
-
-        return redirect()
-            ->route('admin.userManagement')
-            ->with('success', 'User updated successfully.');
+        return redirect()->route('admin.userManagement')->with('success', 'User updated successfully.');
     }
 
     public function toggleStatus(User $user)

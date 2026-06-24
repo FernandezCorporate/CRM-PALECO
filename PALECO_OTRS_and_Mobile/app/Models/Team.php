@@ -18,8 +18,6 @@ class Team extends Model
     protected $fillable = [
         'team_name',
         'department_id',
-        'shift_start',
-        'shift_end',
         'is_active',
     ];
 
@@ -40,6 +38,11 @@ class Team extends Model
         return $this->belongsToMany(User::class, 'team_members', 'team_id', 'user_id')
                     ->withPivot('role')
                     ->withTimestamps();
+    }
+
+    public function shifts()
+    {
+        return $this->hasMany(TeamShift::class);
     }
 
     public function getActivitylogOptions(): LogOptions

@@ -19,7 +19,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'username', 'email', 'password', 'role', 
-        'department_id', 'shift_start', 'shift_end',
+        'department_id', 
         'first_name', 'middle_name', 'last_name', 'name_ext',
         'contact', 'last_login_at'
     ];
@@ -56,5 +56,10 @@ class User extends Authenticatable
         return $this->belongsToMany(Team::class, 'team_members', 'user_id', 'team_id')
                     ->withPivot('role')
                     ->withTimestamps();
+    }
+
+    public function shifts()
+    {
+        return $this->hasMany(UserShift::class);
     }
 }

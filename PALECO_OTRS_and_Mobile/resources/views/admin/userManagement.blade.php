@@ -1,18 +1,14 @@
 @extends('admin.sidebar')
-
 @section('title', 'User Management')
 
 @section('content')
-
-
 <div class="text-slate-800">
-
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
             <h1 class="text-2xl font-bold text-slate-900 m-0">User Management</h1>
             <p class="text-sm text-slate-500 mt-1">Create, update, and deactivate accounts across all roles.</p>
         </div>
-        <a href={{ route('admin.addUserForm') }}>
+        <a href="{{ route('admin.addUserForm') }}">
             <button type="button" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-sm flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                 New User
@@ -59,11 +55,8 @@
     </div>
 
     <form action="{{ route('admin.userManagement') }}" method="GET" class="flex flex-col lg:flex-row lg:items-end bg-white border border-slate-200 p-4 rounded-xl mb-6 shadow-sm gap-4">
-        
         <div class="w-full lg:flex-1 shrink-0">
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-1">
-                Search Users
-            </label>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-1">Search Users</label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -73,9 +66,7 @@
         </div>
 
         <div class="w-full lg:w-48 shrink-0">
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-1">
-                Filter By
-            </label>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-1">Filter By</label>
             <select name="role" onchange="this.form.submit()" class="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-700 bg-white">
                 <option value="all" {{ request('role', 'all') == 'all' ? 'selected' : '' }}>All Roles</option>
                 @foreach(\App\Enums\UserRole::cases() as $roleOption)
@@ -87,9 +78,7 @@
         </div>
 
         <div class="w-full lg:w-48 shrink-0">
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-1">
-                Order By
-            </label>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-1">Order By</label>
             <select name="sort" onchange="this.form.submit()" class="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-700 bg-white">
                 @foreach(\App\Enums\UserSort::cases() as $sortOption)
                     <option value="{{ $sortOption->value }}" {{ request('sort') == $sortOption->value ? 'selected' : '' }}>
@@ -98,7 +87,6 @@
                 @endforeach
             </select>
         </div>
-        
         <button type="submit" class="hidden"></button>
     </form>
 
@@ -108,7 +96,7 @@
                 <tr class="text-xs uppercase tracking-wider text-slate-500 font-semibold">
                     <th class="px-6 py-4">User</th>
                     <th class="px-6 py-4">Role</th>
-                    <th class="px-6 py-4">Team / Shift</th>
+                    <th class="px-6 py-4">Department</th>
                     <th class="px-6 py-4">Last Login</th>
                     <th class="px-6 py-4">Status</th>
                     <th class="px-6 py-4 text-right">Actions</th>
@@ -136,7 +124,6 @@
                                 </div>
                             </div>
                         </td>
-
                         <td class="px-6 py-4">
                             @if($user->role)
                                 <span class="text-[11px] font-bold px-2.5 py-1 rounded-full {{ $user->role->badgeClasses() }}">
@@ -148,32 +135,21 @@
                                 </span>
                             @endif
                         </td>
-
                         <td class="px-6 py-4">
                             @if($user->department)
                                 <div class="font-medium text-slate-800">{{ $user->department->dept_name }}</div>
                             @else
                                 <div class="text-slate-400">—</div>
                             @endif
-                            
-                            <div class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                {{ $user->shift_start ? \Carbon\Carbon::parse($user->shift_start)->format('g:i A') : '--:--' }} 
-                                to 
-                                {{ $user->shift_end ? \Carbon\Carbon::parse($user->shift_end)->format('g:i A') : '--:--' }}
-                            </div>
                         </td>
-
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                             @if($user->last_login_at)
-                                <span class="text-slate-800 font-medium">{{ $user->last_login_at->format('M d, Y') }}</span>
-                                <br>
+                                <span class="text-slate-800 font-medium">{{ $user->last_login_at->format('M d, Y') }}</span><br>
                                 <span class="text-[11px] text-slate-400">{{ $user->last_login_at->format('h:i A') }}</span>
                             @else
                                 <span class="text-slate-400 italic">Never logged in</span>
                             @endif
                         </td>
-
                         <td class="px-6 py-4">
                             @if($user->is_active)
                                 <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-green-100 text-green-700 flex items-center gap-1 w-max">
@@ -185,7 +161,6 @@
                                 </span>
                             @endif
                         </td>
-
                         <td class="px-6 py-4 text-right">
                             <a href="{{ route('admin.updateUserForm', $user->id) }}" class="text-slate-400 hover:text-blue-600 transition-colors mr-3" title="Edit Account">
                                 <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
@@ -222,7 +197,7 @@
             </tbody>
         </table>
     </div>
+
     @include('admin.paginations.shared-pagination', ['paginator' => $users, 'itemName' => 'users'])
 </div>
-
 @endsection

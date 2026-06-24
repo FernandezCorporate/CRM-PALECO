@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-// Models & Enums
 use App\Models\User;
 use App\Models\Department;
 use App\Models\UserShift;
@@ -14,11 +13,9 @@ use App\Enums\LogName;
 use App\Enums\LogDescription;
 use App\Enums\UserSort;
 
-// Requests
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 
-// Facades
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -97,6 +94,12 @@ class UserController extends Controller
                 foreach ($request->shifts as $shiftData) {
                     $user->shifts()->create($shiftData);
                 }
+                
+                // 💡 Manually log shift assignment on user creation
+                activity(LogName::USER_MANAGEMENT->value)
+                    ->performedOn($user)
+                    ->causedBy(Auth::user())
+                    ->log(LogDescription::modelUpdated('created', 'User shift schedule'));
             }
         });
 
@@ -115,27 +118,69 @@ class UserController extends Controller
     {
         $validated = $request->validated();
 
-        DB::transaction(function() use ($request, $user, $validated) {
-            $user->first_name   = $validated['first_name'];
-            $user->middle_name  = $validated['middle_name'] ?? null;
-            $user->last_name    = $validated['last_name'];
-            $user->name_ext     = $validated['name_ext'] ?? null;
-            $user->username     = $validated['username'];
-            $user->email        = $validated['email'] ?? null;
-            $user->contact      = $validated['contact'];
-            
-            if (Auth::id() !== $user->id) {
-                $user->role = $validated['role'];
-            }
-            
-            $user->department_id = $validated['department_id']; 
-            $user->save();
+        // 1. Array comparison: Check if the user modified the dynamic shift rows
+        $existingShifts = $user->shifts->map(function($shift) {
+            return [
+                'day_of_week' => $shift->day_of_week->value,
+                'start_time'  => \Carbon\Carbon::parse($shift->start_time)->format('H:i'),
+                'end_time'    => \Carbon\Carbon::parse($shift->end_time)->format('H:i'),
+            ];
+        })->sortBy(['day_of_week', 'start_time'])->values()->toArray();
 
-            $user->shifts()->delete();
-            if ($request->has('shifts')) {
-                foreach ($request->shifts as $shiftData) {
-                    $user->shifts()->create($shiftData);
+        $incomingShifts = collect($request->input('shifts', []))->map(function($shift) {
+            return [
+                'day_of_week' => $shift['day_of_week'],
+                'start_time'  => \Carbon\Carbon::parse($shift['start_time'])->format('H:i'),
+                'end_time'    => \Carbon\Carbon::parse($shift['end_time'])->format('H:i'),
+            ];
+        })->sortBy(['day_of_week', 'start_time'])->values()->toArray();
+
+        $shiftsChanged = ($existingShifts !== $incomingShifts);
+
+        // 2. Assign standard attributes
+        $user->first_name   = $validated['first_name'];
+        $user->middle_name  = $validated['middle_name'] ?? null;
+        $user->last_name    = $validated['last_name'];
+        $user->name_ext     = $validated['name_ext'] ?? null;
+        $user->username     = $validated['username'];
+        $user->email        = $validated['email'] ?? null;
+        $user->contact      = $validated['contact'];
+        
+        if (Auth::id() !== $user->id) {
+            $user->role = $validated['role'];
+        }
+        
+        $user->department_id = $validated['department_id']; 
+
+        $userIsDirty = $user->isDirty();
+
+        // 3. The Escape Hatch: If nothing changed, block the database save entirely
+        if (!$userIsDirty && !$shiftsChanged) {
+            return redirect()
+                ->route('admin.userManagement')
+                ->with('success', 'No changes were made to the user profile.');
+        }
+
+        // 4. Commit changes
+        DB::transaction(function() use ($request, $user, $userIsDirty, $shiftsChanged) {
+            if ($userIsDirty) {
+                // The Spatie LogsActivity trait handles logging these attribute changes automatically
+                $user->save(); 
+            }
+
+            if ($shiftsChanged) {
+                $user->shifts()->delete();
+                if ($request->has('shifts')) {
+                    foreach ($request->shifts as $shiftData) {
+                        $user->shifts()->create($shiftData);
+                    }
                 }
+
+                // 💡 Manually log shift updates
+                activity(LogName::USER_MANAGEMENT->value)
+                    ->performedOn($user)
+                    ->causedBy(Auth::user())
+                    ->log(LogDescription::modelUpdated('updated', 'User shift schedule'));
             }
         });
 

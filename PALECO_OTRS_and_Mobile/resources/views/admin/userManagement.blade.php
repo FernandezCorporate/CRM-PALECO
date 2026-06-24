@@ -2,6 +2,7 @@
 @section('title', 'User Management')
 
 @section('content')
+@include('admin.prompts.admin-prompt')
 <div class="text-slate-800">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>

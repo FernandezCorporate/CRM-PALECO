@@ -16,8 +16,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/', function () {
         return match (Auth::user()->role) {
-            UserRole::ADMIN => redirect()->route('admin.pages.dashboard'),
-            UserRole::CWD => redirect()->route('cwd.pages.dashboard'),
+            UserRole::ADMIN => redirect()->route('admin.dashboard'),
+            UserRole::CWD => redirect()->route('cwd.dashboard'),
             default => abort(403),
         };
     })->name('dashboard');

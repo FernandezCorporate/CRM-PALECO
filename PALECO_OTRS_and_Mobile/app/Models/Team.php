@@ -23,6 +23,8 @@ class Team extends Model
         'team_name',
         'department_id',
         'is_active',
+        'shift_start',
+        'shift_end',
     ];
 
     // Translates datatypes between the database and the Laravel application
@@ -48,12 +50,6 @@ class Team extends Model
         return $this->belongsToMany(User::class, 'team_members', 'team_id', 'user_id')
                     ->withPivot('role')
                     ->withTimestamps();
-    }
-
-    // Team can have multiple shifts
-    public function shifts()
-    {
-        return $this->hasMany(TeamShift::class);
     }
 
     // Defines the configuration (how a team data alteration shall be audited) using the Spatie Activitylog package

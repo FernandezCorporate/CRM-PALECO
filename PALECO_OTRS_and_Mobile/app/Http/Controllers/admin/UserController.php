@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 
 use App\Models\User;
 use App\Models\Department;
-use App\Models\UserShift;
 use App\Enums\UserRole;
 use App\Enums\LogName;
 use App\Enums\LogDescription;
@@ -76,8 +75,8 @@ class UserController extends Controller
     {
         $validated = $request->validated();
 
-        DB::transaction(function() use ($validated, $request) {
-            $user = User::create([
+        DB::transaction(function() use ($validated) {
+            User::create([
                 'first_name'    => $validated['first_name'],
                 'middle_name'   => $validated['middle_name'] ?? null,
                 'last_name'     => $validated['last_name'],
@@ -89,18 +88,6 @@ class UserController extends Controller
                 'role'          => $validated['role'],
                 'department_id' => $validated['department_id'] ?? null, 
             ]);
-
-            if ($request->has('shifts')) {
-                foreach ($request->shifts as $shiftData) {
-                    $user->shifts()->create($shiftData);
-                }
-                
-                // 💡 Manually log shift assignment on user creation
-                activity(LogName::USER_MANAGEMENT->value)
-                    ->performedOn($user)
-                    ->causedBy(Auth::user())
-                    ->log(LogDescription::modelUpdated('created', 'User shift schedule'));
-            }
         });
 
         return redirect()->route('admin.userManagement')->with('success', 'User account created successfully.');
@@ -109,7 +96,6 @@ class UserController extends Controller
     public function updateUserForm(User $user) 
     {
         $departments = Department::orderBy('dept_name')->get();
-        $user->load('shifts');
         
         return view('admin.forms.userForm', compact('departments', 'user'));     
     }
@@ -118,26 +104,7 @@ class UserController extends Controller
     {
         $validated = $request->validated();
 
-        // 1. Array comparison: Check if the user modified the dynamic shift rows
-        $existingShifts = $user->shifts->map(function($shift) {
-            return [
-                'day_of_week' => $shift->day_of_week->value,
-                'start_time'  => \Carbon\Carbon::parse($shift->start_time)->format('H:i'),
-                'end_time'    => \Carbon\Carbon::parse($shift->end_time)->format('H:i'),
-            ];
-        })->sortBy(['day_of_week', 'start_time'])->values()->toArray();
-
-        $incomingShifts = collect($request->input('shifts', []))->map(function($shift) {
-            return [
-                'day_of_week' => $shift['day_of_week'],
-                'start_time'  => \Carbon\Carbon::parse($shift['start_time'])->format('H:i'),
-                'end_time'    => \Carbon\Carbon::parse($shift['end_time'])->format('H:i'),
-            ];
-        })->sortBy(['day_of_week', 'start_time'])->values()->toArray();
-
-        $shiftsChanged = ($existingShifts !== $incomingShifts);
-
-        // 2. Assign standard attributes
+        // 1. Assign standard attributes
         $user->first_name   = $validated['first_name'];
         $user->middle_name  = $validated['middle_name'] ?? null;
         $user->last_name    = $validated['last_name'];
@@ -152,36 +119,17 @@ class UserController extends Controller
         
         $user->department_id = $validated['department_id']; 
 
-        $userIsDirty = $user->isDirty();
-
-        // 3. The Escape Hatch: If nothing changed, block the database save entirely
-        if (!$userIsDirty && !$shiftsChanged) {
+        // 2. The Escape Hatch: If nothing changed, block the database save entirely
+        if (!$user->isDirty()) {
             return redirect()
                 ->route('admin.userManagement')
                 ->with('success', 'No changes were made to the user profile.');
         }
 
-        // 4. Commit changes
-        DB::transaction(function() use ($request, $user, $userIsDirty, $shiftsChanged) {
-            if ($userIsDirty) {
-                // The Spatie LogsActivity trait handles logging these attribute changes automatically
-                $user->save(); 
-            }
-
-            if ($shiftsChanged) {
-                $user->shifts()->delete();
-                if ($request->has('shifts')) {
-                    foreach ($request->shifts as $shiftData) {
-                        $user->shifts()->create($shiftData);
-                    }
-                }
-
-                // 💡 Manually log shift updates
-                activity(LogName::USER_MANAGEMENT->value)
-                    ->performedOn($user)
-                    ->causedBy(Auth::user())
-                    ->log(LogDescription::modelUpdated('updated', 'User shift schedule'));
-            }
+        // 3. Commit changes
+        DB::transaction(function() use ($user) {
+            // The Spatie LogsActivity trait handles logging these attribute changes automatically
+            $user->save(); 
         });
 
         return redirect()->route('admin.userManagement')->with('success', 'User updated successfully.');
@@ -210,7 +158,8 @@ class UserController extends Controller
             ->with('success', "User account has been {$statusWord}.");
     }
 
-    public function getUserDetails(User $user){
-        return view('admin.userDetails', compact('user'));
+    public function getUserDetails(User $user)
+    {
+        return view('admin.pages.userDetails', compact('user'));
     }
 }

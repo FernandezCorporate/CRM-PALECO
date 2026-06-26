@@ -13,8 +13,8 @@ class TeamController extends Controller
     {
         $departments = Department::orderBy('dept_name')->get();
 
-        // 💡 Eager load the new 'shifts' relationship
-        $teamQuery = Team::with(['users', 'department', 'shifts'])->orderBy('team_name');
+        // 💡 Eager load fixed: 'shifts' removed to prevent RelationNotFoundException
+        $teamQuery = Team::with(['users', 'department'])->orderBy('team_name');
 
         $teamQuery->when($request->filled('search'), function ($query) use ($request) {
             return $query->where('team_name', 'like', "%{$request->search}%");

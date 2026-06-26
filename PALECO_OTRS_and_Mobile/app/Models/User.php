@@ -68,10 +68,4 @@ class User extends Authenticatable
                     ->withPivot('role')
                     ->withTimestamps();
     }
-
-    // Users can have multiple shifts
-    public function shifts()
-    {
-        return $this->hasMany(UserShift::class);
-    }
 }

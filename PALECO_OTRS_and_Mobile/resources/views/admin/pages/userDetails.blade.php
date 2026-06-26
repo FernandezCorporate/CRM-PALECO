@@ -102,30 +102,13 @@
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-5">Operational Details</h3>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-6">
                     <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
                         <p class="text-xs font-semibold text-slate-500 mb-1">Assigned Department</p>
                         @if($user->department)
                             <p class="text-base font-bold text-slate-800">{{ $user->department->dept_name }}</p>
                         @else
                             <p class="text-base font-bold text-slate-400 italic">Unassigned</p>
-                        @endif
-                    </div>
-
-                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                        <p class="text-xs font-semibold text-slate-500 mb-1">Assigned Shift</p>
-                        @if($user->shift_start && $user->shift_end)
-                            <div class="flex items-center gap-2">
-                                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <p class="text-base font-bold text-slate-800">
-                                    {{ \Carbon\Carbon::parse($user->shift_start)->format('g:i A') }} - {{ \Carbon\Carbon::parse($user->shift_end)->format('g:i A') }}
-                                </p>
-                            </div>
-                        @else
-                            <div class="flex items-center gap-2">
-                                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <p class="text-base font-bold text-slate-400 italic">No shift assigned</p>
-                            </div>
                         @endif
                     </div>
                 </div>

@@ -116,52 +116,6 @@
                     </select>
                 </div>
             </div>
-
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-3">Shift Schedule</label>
-            <div id="shift-error" class="hidden px-4 py-3 bg-rose-50 border border-rose-200 text-rose-600 rounded-lg text-sm mb-4"></div>
-            
-            <div id="shift-container" class="space-y-3 mb-4">
-                @php
-                    $shiftData = [];
-                    if (old('shifts')) {
-                        $shiftData = old('shifts');
-                    } elseif (isset($user) && $user->shifts->isNotEmpty()) {
-                        foreach($user->shifts as $s) {
-                            $shiftData[] = [
-                                'day_of_week' => $s->day_of_week->value,
-                                'start_time' => \Carbon\Carbon::parse($s->start_time)->format('H:i'),
-                                'end_time' => \Carbon\Carbon::parse($s->end_time)->format('H:i')
-                            ];
-                        }
-                    }
-                @endphp
-
-                @foreach($shiftData as $index => $shift)
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 shift-row bg-slate-50 p-4 rounded-lg border border-slate-100 items-center transition-colors">
-                        <div class="md:col-span-2">
-                            <select name="shifts[{{$index}}][day_of_week]" class="shift-day w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
-                                @foreach(\App\Enums\DayOfWeek::cases() as $day)
-                                    <option value="{{ $day->value }}" {{ ($shift['day_of_week'] ?? '') == $day->value ? 'selected' : '' }}>{{ $day->value }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <input type="time" name="shifts[{{$index}}][start_time]" value="{{ $shift['start_time'] ?? '' }}" required class="shift-start w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
-                        <div class="flex gap-2">
-                            <input type="time" name="shifts[{{$index}}][end_time]" value="{{ $shift['end_time'] ?? '' }}" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
-                            <button type="button" onclick="removeShiftRow(this)" class="text-rose-500 hover:text-rose-700">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        </div>
-                        @error("shifts.{$index}.start_time") <div class="md:col-span-4 text-xs text-rose-500 mt-1">{{ $message }}</div> @enderror
-                        @error("shifts.{$index}.end_time") <div class="md:col-span-4 text-xs text-rose-500 mt-1">{{ $message }}</div> @enderror
-                    </div>
-                @endforeach
-            </div>
-
-            <button type="button" onclick="addShiftRow()" class="text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                Add Another Shift
-            </button>
         </div>
 
         <div class="pt-4 flex items-center gap-4">
@@ -173,25 +127,6 @@
             </a>
         </div>
     </form>
-</div>
-
-<div id="shift-template" class="hidden">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 shift-row bg-slate-50 p-4 rounded-lg border border-slate-100 items-center transition-colors">
-        <div class="md:col-span-2">
-            <select name="shifts[__INDEX__][day_of_week]" class="shift-day w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
-                @foreach(\App\Enums\DayOfWeek::cases() as $day)
-                    <option value="{{ $day->value }}">{{ $day->value }}</option>
-                @endforeach
-            </select>
-        </div>
-        <input type="time" name="shifts[__INDEX__][start_time]" required class="shift-start w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
-        <div class="flex gap-2">
-            <input type="time" name="shifts[__INDEX__][end_time]" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
-            <button type="button" onclick="removeShiftRow(this)" class="text-rose-500 hover:text-rose-700">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-            </button>
-        </div>
-    </div>
 </div>
 
 @endsection

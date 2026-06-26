@@ -169,6 +169,4 @@
     @include('admin.paginations.shared-pagination', ['paginator' => $departments, 'itemName' => 'departments'])
 </div>
 
-<script src="{{ asset('js/view-toggle.js') }}"></script>
-
 @endsection

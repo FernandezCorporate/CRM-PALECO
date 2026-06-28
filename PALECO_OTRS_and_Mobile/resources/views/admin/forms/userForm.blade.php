@@ -1,5 +1,5 @@
 @extends('admin.base.sidebar')
-@section('title', isset($user) ? 'Edit User - PALECO CRM-CWD' : 'New User - PALECO CRM-CWD')
+@section('title', isset($user) ? 'Edit User' : 'New User')
 
 @section('content')
 

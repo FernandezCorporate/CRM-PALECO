@@ -97,8 +97,9 @@ class UserController extends Controller
     public function updateUserForm(User $user) 
     {
         $departments = Department::orderBy('dept_name')->get();
+        $userRoles = UserRole::cases();
         
-        return view('admin.forms.userForm', compact('departments', 'user'));     
+        return view('admin.forms.userForm', compact('departments', 'user', 'userRoles'));     
     }
 
     public function updateUser(UpdateUserRequest $request, User $user)

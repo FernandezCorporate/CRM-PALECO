@@ -1,5 +1,5 @@
 @extends('admin.base.sidebar')
-@section('title', 'User Details - PALECO CRM-CWD')
+@section('title', 'User Details')
 
 @section('content')
 

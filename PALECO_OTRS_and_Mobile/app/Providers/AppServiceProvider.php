@@ -22,14 +22,16 @@ class AppServiceProvider extends ServiceProvider
         // Centralized authorization gate to verify if a user holds the CWD role; used in '\routes\web.php'.
         Gate::define('access-cwd', fn(User $user) => $user->role === UserRole::CWD);
 
-        // Intercepts activity log creation to automatically inject the user's IP address into the metadata.
-        Activity::creating(function (Activity $activity) {
-            if (request()->ip()) {
+        // Intercepts activity log creation to automatically inject metadata.
+            Activity::creating(function (Activity $activity) {
                 $activity->properties = $activity->properties->merge([
-                    'ip_address' => request()->ip()
+                    // Use the null coalescing operator to explicitly flag background/terminal jobs
+                    'ip_address' => request()->ip() ?? 'CLI/System',
+                    
+                    // Crucial for identifying if the action came from the Web or the Flutter App
+                    'user_agent' => request()->userAgent() ?? 'CLI/System'
                 ]);
-            }
-        });
+            });
 
         // Configures a rate limit policy allowing 20 login attempts per minute based on the requester's IP address.
         RateLimiter::for('login-ip', function (Request $request) {

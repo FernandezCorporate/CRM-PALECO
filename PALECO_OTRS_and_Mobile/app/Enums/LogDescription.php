@@ -27,4 +27,9 @@ enum LogDescription: string
     {
         return "{$modelName} has been {$eventName}";       // Description string output
     }
+
+    public static function memberAssigned(int $memberCount, string $teamName): string
+    {
+        return "{$memberCount} personnel have been assigned to {$teamName}";
+    }
 }

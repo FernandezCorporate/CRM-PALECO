@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 // Models & Enums
 use App\Models\Department;
+use App\Enums\UserRole;
 
 // Requests
 use App\Http\Requests\department\StoreDepartmentRequest;
@@ -34,19 +35,19 @@ class DepartmentController extends Controller
         });
 
         // 3. Paginate the filtered results
-        $departments = $deptQuery->paginate(10)->withQueryString();
+        $departments = $deptQuery->paginate(9)->withQueryString();
 
         // 4. Transform the collection (Your existing logic)
         $departments->getCollection()->transform(function ($department) {
             $department->total_teams = $department->teams->count();
-            $department->total_personnel = $department->users->where('role', \App\Enums\UserRole::FIELD_PERSONNEL)->count();
-            $department->total_foremen = $department->users->where('role', \App\Enums\UserRole::FOREMAN)->count();
+            $department->total_personnel = $department->users->where('role', UserRole::FIELD_PERSONNEL)->count();
+            $department->total_foremen = $department->users->where('role', UserRole::FOREMAN)->count();
 
             $department->unique_shifts = $department->teams
                 ->filter(fn($u) => $u->shift_start && $u->shift_end)
                 ->map(function($u) {
-                    $start = \Carbon\Carbon::parse($u->shift_start)->format('gA');
-                    $end = \Carbon\Carbon::parse($u->shift_end)->format('gA');
+                    $start = Carbon::parse($u->shift_start)->format('gA');
+                    $end = Carbon::parse($u->shift_end)->format('gA');
 
                     $start = str_replace(['12AM', '12PM'], ['12MN', '12NN'], $start);
                     $end = str_replace(['12AM', '12PM'], ['12MN', '12NN'], $end);

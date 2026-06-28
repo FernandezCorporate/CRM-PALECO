@@ -9,4 +9,5 @@ enum MemberRole : string
     // Static values allowed for 'role' in 'team_members' table
     case LEADER = 'leader';
     case MEMBER = 'member';
+    case BACKUP = 'backup';
 }

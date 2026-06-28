@@ -68,7 +68,8 @@ class UserController extends Controller
     public function addUserForm(Request $request)
     {
         $departments = Department::orderBy('dept_name')->get();
-        return view('admin.forms.userForm', compact('departments'));
+        $userRoles = UserRole::cases();
+        return view('admin.forms.userForm', compact('departments', 'userRoles'));
     }
 
     public function addUser(StoreUserRequest $request)

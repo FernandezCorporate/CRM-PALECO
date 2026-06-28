@@ -14,13 +14,13 @@
         <div class="flex items-center gap-4">
             
             <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200">
-                <button id="btn-card-view" onclick="switchView('card')" class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-slate-500 hover:text-slate-700 flex items-center gap-1.5">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    <span class="hidden md:inline">Cards</span>
-                </button>
                 <button id="btn-table-view" onclick="switchView('table')" class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-slate-500 hover:text-slate-700 flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
                     <span class="hidden md:inline">Table</span>
+                </button>
+                <button id="btn-card-view" onclick="switchView('card')" class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-slate-500 hover:text-slate-700 flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    <span class="hidden md:inline">Cards</span>
                 </button>
             </div>
 
@@ -58,61 +58,7 @@
         <button type="submit" class="hidden"></button>
     </form>
 
-    <div id="card-view-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-4">
-        @forelse ($departments as $department)
-            <div class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col min-h-[160px] overflow-hidden">
-                <div class="p-6 flex-1 flex flex-col">
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="text-lg font-bold text-slate-900">{{ $department->dept_name }}</h3>
-                        <a href="{{ route('admin.updateDeptForm', $department->id) }}" class="text-slate-400 hover:text-emerald-600 transition-colors p-1 shrink-0" title="Edit Department">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                        </a>
-                    </div>
-                    <p class="text-[13px] text-slate-500 mb-5 line-clamp-2">{{ $department->dept_description ?? 'No description.' }}</p>
-                    
-                    <div class="space-y-3 mb-6">
-                        <div class="flex items-center gap-2.5 text-slate-700">
-                            <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                            </svg>
-                            <span class="text-[13px] font-medium">
-                                {{ $department->total_teams }} {{ Str::plural('team', $department->total_teams) }} &bull; 
-                                {{ $department->total_personnel }} personnel &bull; 
-                                {{ $department->total_foremen }} foremen
-                            </span>
-                        </div>
-                        <div class="flex items-start gap-2.5">
-                            <svg class="w-4 h-4 text-slate-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <div class="flex flex-wrap gap-1.5">
-                                @forelse($department->unique_shifts as $shift)
-                                    <span class="px-2 py-0.5 bg-slate-50 border border-slate-100 rounded-[4px] text-[11px] font-medium text-slate-700">
-                                        {{ $shift }}
-                                    </span>
-                                @empty
-                                    <span class="text-[12px] text-slate-400 italic mt-0.5">No shifts scheduled</span>
-                                @endforelse
-                            </div>
-                        </div>
-                    </div>                
-                </div>
-
-                <a href="{{ route('admin.teamManagement', ['department' => $department->id]) }}" class="block px-6 py-3 bg-slate-50/50 border-t border-slate-100 text-[13px] font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors group">
-                    <div class="flex justify-between items-center">
-                        <span>View teams</span>
-                        <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                    </div>
-                </a>
-            </div>
-        @empty
-            <div class="col-span-full text-center text-slate-500 py-8 bg-white border border-slate-200 rounded-xl shadow-sm">
-                No departments found. Click "Add Department" to create your first one.
-            </div>
-        @endforelse
-    </div>
-
-    <div id="table-view-container" class="hidden bg-white border border-slate-200 rounded-xl overflow-x-auto shadow-sm mb-4">
+    <div id="table-view-container" class="bg-white border border-slate-200 rounded-xl overflow-x-auto shadow-sm mb-4">
         <table class="w-full text-left text-sm whitespace-nowrap">
             <thead class="bg-slate-50 border-b border-slate-200">
                 <tr class="text-xs uppercase tracking-wider text-slate-500 font-semibold">
@@ -164,6 +110,60 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    <div id="card-view-container" class="hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-4">
+        @forelse ($departments as $department)
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col min-h-[160px] overflow-hidden">
+                <div class="p-6 flex-1 flex flex-col">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-lg font-bold text-slate-900">{{ $department->dept_name }}</h3>
+                        <a href="{{ route('admin.updateDeptForm', $department->id) }}" class="text-slate-400 hover:text-emerald-600 transition-colors p-1 shrink-0" title="Edit Department">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        </a>
+                    </div>
+                    <p class="text-[13px] text-slate-500 mb-5 line-clamp-2">{{ $department->dept_description ?? 'No description.' }}</p>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center gap-2.5 text-slate-700">
+                            <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                            <span class="text-[13px] font-medium">
+                                {{ $department->total_teams }} {{ Str::plural('team', $department->total_teams) }} &bull; 
+                                {{ $department->total_personnel }} personnel &bull; 
+                                {{ $department->total_foremen }} foremen
+                            </span>
+                        </div>
+                        <div class="flex items-start gap-2.5">
+                            <svg class="w-4 h-4 text-slate-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div class="flex flex-wrap gap-1.5">
+                                @forelse($department->unique_shifts as $shift)
+                                    <span class="px-2 py-0.5 bg-slate-50 border border-slate-100 rounded-[4px] text-[11px] font-medium text-slate-700">
+                                        {{ $shift }}
+                                    </span>
+                                @empty
+                                    <span class="text-[12px] text-slate-400 italic mt-0.5">No shifts scheduled</span>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>                
+                </div>
+
+                <a href="{{ route('admin.teamManagement', ['department' => $department->id]) }}" class="block px-6 py-3 bg-slate-50/50 border-t border-slate-100 text-[13px] font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors group">
+                    <div class="flex justify-between items-center">
+                        <span>View teams</span>
+                        <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                </a>
+            </div>
+        @empty
+            <div class="col-span-full text-center text-slate-500 py-8 bg-white border border-slate-200 rounded-xl shadow-sm">
+                No departments found. Click "Add Department" to create your first one.
+            </div>
+        @endforelse
     </div>
 
     @include('admin.paginations.shared-pagination', ['paginator' => $departments, 'itemName' => 'departments'])

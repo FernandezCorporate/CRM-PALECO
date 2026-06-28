@@ -15,17 +15,17 @@
         
         <div class="flex items-center gap-4">
             <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200">
-                <button id="btn-card-view" onclick="window.switchView('card')" class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-slate-500 hover:text-slate-700 flex items-center gap-1.5">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    <span class="hidden md:inline">Cards</span>
-                </button>
                 <button id="btn-table-view" onclick="window.switchView('table')" class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-slate-500 hover:text-slate-700 flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
                     <span class="hidden md:inline">Table</span>
                 </button>
+                <button id="btn-card-view" onclick="window.switchView('card')" class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-slate-500 hover:text-slate-700 flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    <span class="hidden md:inline">Cards</span>
+                </button>
             </div>
 
-            <a href="#" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-sm flex items-center gap-2 h-fit">
+            <a href="{{ route('admin.addTeamForm') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-sm flex items-center gap-2 h-fit">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                 Add New Team
             </a>
@@ -63,7 +63,70 @@
         <button type="submit" class="hidden"></button>
     </form>
 
-    <div id="card-view-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
+    <div id="table-view-container" class="bg-white border border-slate-200 rounded-xl overflow-x-auto shadow-sm mb-4">
+        <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead class="bg-slate-50 border-b border-slate-200">
+                <tr class="text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                    <th class="px-6 py-4">Team & Department</th>
+                    <th class="px-6 py-4">Operating Shift</th>
+                    <th class="px-6 py-4">Team Leader</th>
+                    <th class="px-6 py-4">Members</th>
+                    <th class="px-6 py-4 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @forelse ($teams as $team)
+                    @php
+                        $leader = $team->users->where('pivot.role', \App\Enums\MemberRole::LEADER->value)->first();
+                        $memberCount = $team->users->where('pivot.role', \App\Enums\MemberRole::MEMBER->value)->count();
+                    @endphp
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-slate-900">{{ $team->team_name }}</div>
+                            <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider mt-0.5">{{ $team->department->dept_name }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-[4px] text-[11px] font-medium text-slate-700">
+                                {{ $team->shift_start ? \Carbon\Carbon::parse($team->shift_start)->format('g:i A') : '--:--' }} - 
+                                {{ $team->shift_end ? \Carbon\Carbon::parse($team->shift_end)->format('g:i A') : '--:--' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            @if($leader)
+                                <div class="flex items-center gap-2 text-sm text-slate-800">
+                                    <div class="w-6 h-6 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-[9px] shrink-0">
+                                        {{ strtoupper(substr($leader->first_name ?? $leader->username, 0, 1)) }}
+                                    </div>
+                                    <span class="font-medium">{{ $leader->first_name }} {{ $leader->last_name }}</span>
+                                </div>
+                            @else
+                                <span class="text-xs text-slate-400 italic">Unassigned</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-slate-600 font-medium">{{ $memberCount }} active</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="#" class="text-slate-400 hover:text-emerald-600 transition-colors mr-3" title="Edit Team">
+                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </a>
+                            <a href="{{ route('admin.teamMemberManagement', $team->id) }}" class="text-slate-400 hover:text-sky-600 transition-colors ml-2" title="Manage Personnel">
+                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-8 text-center text-slate-500">There are no teams matching your criteria.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <div id="card-view-container" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
         @forelse($teams as $team)
             @php
                 $leader = $team->users->where('pivot.role', \App\Enums\MemberRole::LEADER->value)->first();
@@ -130,69 +193,6 @@
                 <p class="text-sm text-slate-500">There are no teams matching your criteria.</p>
             </div>
         @endforelse
-    </div>
-
-    <div id="table-view-container" class="hidden bg-white border border-slate-200 rounded-xl overflow-x-auto shadow-sm mb-4">
-        <table class="w-full text-left text-sm whitespace-nowrap">
-            <thead class="bg-slate-50 border-b border-slate-200">
-                <tr class="text-xs uppercase tracking-wider text-slate-500 font-semibold">
-                    <th class="px-6 py-4">Team & Department</th>
-                    <th class="px-6 py-4">Operating Shift</th>
-                    <th class="px-6 py-4">Team Leader</th>
-                    <th class="px-6 py-4">Members</th>
-                    <th class="px-6 py-4 text-right">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                @forelse ($teams as $team)
-                    @php
-                        $leader = $team->users->where('pivot.role', \App\Enums\MemberRole::LEADER->value)->first();
-                        $memberCount = $team->users->where('pivot.role', \App\Enums\MemberRole::MEMBER->value)->count();
-                    @endphp
-                    <tr class="hover:bg-slate-50/50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="font-bold text-slate-900">{{ $team->team_name }}</div>
-                            <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider mt-0.5">{{ $team->department->dept_name }}</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-[4px] text-[11px] font-medium text-slate-700">
-                                {{ $team->shift_start ? \Carbon\Carbon::parse($team->shift_start)->format('g:i A') : '--:--' }} - 
-                                {{ $team->shift_end ? \Carbon\Carbon::parse($team->shift_end)->format('g:i A') : '--:--' }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4">
-                            @if($leader)
-                                <div class="flex items-center gap-2 text-sm text-slate-800">
-                                    <div class="w-6 h-6 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-[9px] shrink-0">
-                                        {{ strtoupper(substr($leader->first_name ?? $leader->username, 0, 1)) }}
-                                    </div>
-                                    <span class="font-medium">{{ $leader->first_name }} {{ $leader->last_name }}</span>
-                                </div>
-                            @else
-                                <span class="text-xs text-slate-400 italic">Unassigned</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="text-slate-600 font-medium">{{ $memberCount }} active</span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <a href="#" class="text-slate-400 hover:text-emerald-600 transition-colors mr-3" title="Edit Team">
-                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                            </a>
-                            <a href="{{ route('admin.teamMemberManagement', $team->id) }}" class="text-slate-400 hover:text-sky-600 transition-colors ml-2" title="Manage Personnel">
-                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                </svg>
-                            </a>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-slate-500">There are no teams matching your criteria.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
     </div>
 
     @include('admin.paginations.shared-pagination', ['paginator' => $teams, 'itemName' => 'teams'])

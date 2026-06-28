@@ -96,7 +96,7 @@
                     <label class="block text-xs font-bold text-slate-600 uppercase mb-1.5">System Role *</label>
                     <select name="role" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
                         <option value="">-- Select a Role --</option>
-                        @foreach(\App\Enums\UserRole::cases() as $role)
+                        @foreach($userRoles as $role)
                             <option value="{{ $role->value }}" {{ old('role', isset($user) ? $user->role?->value : '') == $role->value ? 'selected' : '' }}>
                                 {{ $role->label() }}
                             </option>

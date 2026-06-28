@@ -49,6 +49,8 @@ Route::middleware(['auth'])->group(function () {
         // 💡 NEW: Global Team Routes
         Route::prefix('teams')->group(function () {
             Route::get('/', [TeamController::class, 'teamManagement'])->name('admin.teamManagement');
+            Route::get('/create', [TeamController::class, 'addTeamForm'])->name('admin.addTeamForm');
+            Route::post('/create', [TeamController::class, 'addTeam'])->name('admin.addTeam');
             Route::get('/{team}/members', [TeamController::class, 'teamMemberManagement'])->name('admin.teamMemberManagement');
         });
     });
